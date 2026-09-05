@@ -530,11 +530,12 @@
 
     function renderSetup() {
       const config = loadConfig();
-      const options = config.classes.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
+      const active = getActiveClass();
+      const options = config.classes.map(c => `<option value="${escapeHtml(c)}" ${c === active ? "selected" : ""}>${escapeHtml(c)}</option>`).join("");
       screen.innerHTML = `
         <p class="eyebrow">Accesso docente</p>
         <h1>Seleziona la classe</h1>
-        <p>Questa scelta viene memorizzata. Gli studenti non dovranno reinserirla nelle altre slide.</p>
+        <p>Salva la classe della sessione, quindi prosegui con la navigazione in Genially.</p>
         <form id="setupForm" autocomplete="off">
           <div class="grid two">
             <div class="field">
@@ -547,26 +548,41 @@
             </div>
           </div>
           <div class="actions">
-            <button class="btn" type="submit">Avvia Operazione Zero</button>
+            <button class="btn" type="submit">SALVA</button>
+            <button class="btn secondary" type="button" id="changeClass">CAMBIA CLASSE</button>
             <button class="btn secondary" type="button" id="openAdmin">Pannello docente</button>
           </div>
           <div id="setupMessage" class="message"></div>
         </form>`;
 
+      const classSelect = document.getElementById("classSelect");
+      const setupPin = document.getElementById("setupPin");
+      if (active && config.classes.includes(active)) {
+        classSelect.disabled = true;
+        showMessage("setupMessage", `Classe ${active} già salvata. Puoi proseguire in Genially.`, "success");
+      }
+
       document.getElementById("setupForm").addEventListener("submit", event => {
         event.preventDefault();
-        const pin = document.getElementById("setupPin").value;
+        const pin = setupPin.value;
         if (pin !== config.teacherPin) {
           showMessage("setupMessage", "PIN non corretto.");
           return;
         }
-        const selected = document.getElementById("classSelect").value;
+        const selected = classSelect.value;
         setActiveClass(selected);
         loadProgress(selected, config);
-        showMessage("setupMessage", `Classe ${selected} attivata.`, "success");
-        setTimeout(renderDashboard, 450);
+        classSelect.disabled = true;
+        setupPin.value = "";
+        showMessage("setupMessage", `Classe ${selected} salvata. Ora puoi proseguire in Genially.`, "success");
       });
 
+      document.getElementById("changeClass").addEventListener("click", () => {
+        classSelect.disabled = false;
+        setupPin.value = "";
+        classSelect.focus();
+        showMessage("setupMessage", "Seleziona la nuova classe, inserisci il PIN e premi SALVA.", "success");
+      });
       document.getElementById("openAdmin").addEventListener("click", renderAdminLogin);
     }
 
