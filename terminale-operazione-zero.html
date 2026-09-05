@@ -243,11 +243,149 @@
     .tiny { font-size: .78rem; color: var(--muted); }
     .hidden { display: none !important; }
 
+    body.compact-view .app {
+      width: 100%;
+      min-height: 0;
+      padding: 0;
+    }
+
+    body.compact-view .topbar { display: none; }
+
+    body.compact-view .panel {
+      min-height: 0;
+      padding: 8px;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+    }
+
+    body.compact-view .room-list { margin-top: 0; }
+
+    body.compact-view .room {
+      padding: 14px;
+      background: rgba(5, 18, 34, .9);
+    }
+
+    /* Mini-dashboard: usata nel piccolo monitor dell'atrio.
+       Si attiva automaticamente in un iframe stretto/basso oppure con &mode=mini. */
+    body.mini-view {
+      overflow: hidden;
+    }
+
+    body.mini-view .app,
+    body.mini-view .panel {
+      width: 100%;
+      height: 100vh;
+      min-height: 0;
+      padding: 0;
+      margin: 0;
+      overflow: hidden;
+    }
+
+    body.mini-view .room-list {
+      height: 100vh;
+      margin: 0;
+      padding: 3px;
+      gap: 4px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-rows: repeat(2, minmax(0, 1fr));
+    }
+
+    body.mini-view .room {
+      min-width: 0;
+      min-height: 0;
+      padding: 6px 7px;
+      border-radius: 7px;
+      overflow: hidden;
+    }
+
+    body.mini-view .room-head {
+      height: 100%;
+      align-items: center;
+    }
+
+    body.mini-view .room-head > div {
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    body.mini-view .room .eyebrow {
+      margin-bottom: 2px;
+      font-size: clamp(.42rem, 2.3vw, .62rem);
+      line-height: 1;
+    }
+
+    body.mini-view .room h3 {
+      margin: 0;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: clamp(.55rem, 3vw, .83rem);
+      line-height: 1.05;
+    }
+
+    body.mini-view .status {
+      flex: 0 0 auto;
+      width: 12px;
+      height: 12px;
+      overflow: hidden;
+      color: transparent;
+      border-radius: 50%;
+      background: var(--yellow);
+      box-shadow: 0 0 8px rgba(255,214,90,.55);
+    }
+
+    body.mini-view .status.ok {
+      background: var(--green);
+      box-shadow: 0 0 8px rgba(66,255,155,.65);
+    }
+
+    body.mini-view .room-form,
+    body.mini-view .room > p,
+    body.mini-view .room > .message,
+    body.mini-view .mission-summary {
+      display: none !important;
+    }
+
     @media (max-width: 680px) {
       .grid.two, .room-list { grid-template-columns: 1fr; }
       .topbar { align-items: flex-start; flex-direction: column; }
       .room-form { flex-direction: column; }
       .room-form .btn { width: 100%; }
+    }
+
+    @media (max-width: 520px), (max-height: 300px) {
+      body.compact-view:not(.full-view) {
+        overflow: hidden;
+      }
+
+      body.compact-view:not(.full-view) .app,
+      body.compact-view:not(.full-view) .panel {
+        width: 100%; height: 100vh; min-height: 0; padding: 0; margin: 0; overflow: hidden;
+      }
+
+      body.compact-view:not(.full-view) .room-list {
+        height: 100vh; margin: 0; padding: 3px; gap: 4px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-rows: repeat(2, minmax(0, 1fr));
+      }
+
+      body.compact-view:not(.full-view) .room {
+        min-width: 0; min-height: 0; padding: 6px 7px; border-radius: 7px; overflow: hidden;
+      }
+
+      body.compact-view:not(.full-view) .room-head { height: 100%; align-items: center; }
+      body.compact-view:not(.full-view) .room-head > div { min-width: 0; overflow: hidden; }
+      body.compact-view:not(.full-view) .room .eyebrow { margin-bottom: 2px; font-size: clamp(.42rem, 2.3vw, .62rem); line-height: 1; }
+      body.compact-view:not(.full-view) .room h3 { margin: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: clamp(.55rem, 3vw, .83rem); line-height: 1.05; }
+      body.compact-view:not(.full-view) .status { flex: 0 0 auto; width: 12px; height: 12px; overflow: hidden; color: transparent; border-radius: 50%; background: var(--yellow); box-shadow: 0 0 8px rgba(255,214,90,.55); }
+      body.compact-view:not(.full-view) .status.ok { background: var(--green); box-shadow: 0 0 8px rgba(66,255,155,.65); }
+      body.compact-view:not(.full-view) .room-form,
+      body.compact-view:not(.full-view) .room > p,
+      body.compact-view:not(.full-view) .room > .message,
+      body.compact-view:not(.full-view) .mission-summary { display: none !important; }
     }
   </style>
 </head>
@@ -290,6 +428,7 @@
     const pill = document.getElementById("activeClassPill");
     const params = new URLSearchParams(location.search);
     const requestedView = (params.get("view") || "auto").toLowerCase();
+    const displayMode = (params.get("mode") || "auto").toLowerCase();
 
     function clone(value) {
       return JSON.parse(JSON.stringify(value));
@@ -434,6 +573,10 @@
     function renderDashboard() {
       const active = requireClass();
       if (!active) return;
+      const compact = requestedView === "avanzamento" || requestedView === "dashboard";
+      document.body.classList.toggle("compact-view", compact);
+      document.body.classList.toggle("mini-view", compact && displayMode === "mini");
+      document.body.classList.toggle("full-view", compact && displayMode === "full");
       const config = loadConfig();
       const progress = loadProgress(active, config);
       const completedCount = config.rooms.filter(room => progress.completed[room.id]).length;
@@ -459,7 +602,17 @@
           </article>`;
       }).join("");
 
-      screen.innerHTML = `
+      screen.innerHTML = compact ? `
+        <div class="room-list">${roomsHtml}</div>
+        <div class="admin-card mission-summary">
+          <p class="eyebrow">Riepilogo missione</p>
+          <p><strong>Classe ${escapeHtml(active)}</strong> — ${completedCount} aree completate su ${config.rooms.length}.</p>
+          <div class="progress-track" aria-label="Avanzamento ${percent}%"><div class="progress-bar" style="width:${percent}%"></div></div>
+          ${completedCount === config.rooms.length ? `
+            <div class="locked" style="border-color:rgba(66,255,155,.48);color:var(--green);background:rgba(66,255,155,.07)">
+              TUTTE LE STANZE COMPLETATE — I quattro frammenti sono stati convalidati. Cercate nell’ambiente l’indizio che stabilisce come comporli.
+            </div>` : ""}
+        </div>` : `
         <p class="eyebrow">Terminale centrale</p>
         <h1>Stato della missione</h1>
         <p>${completedCount} aree completate su ${config.rooms.length}.</p>
@@ -490,7 +643,8 @@
         });
       });
 
-      document.getElementById("switchClass").addEventListener("click", renderSetup);
+      const switchClassButton = document.getElementById("switchClass");
+      if (switchClassButton) switchClassButton.addEventListener("click", renderSetup);
     }
 
     function renderAdminLogin() {
