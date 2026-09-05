@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="it">
 <head>
@@ -215,28 +214,6 @@
       transition: width .4s ease;
     }
 
-    .password-slots {
-      margin: 22px 0;
-      display: flex;
-      justify-content: center;
-      gap: clamp(5px, 1.4vw, 12px);
-      flex-wrap: wrap;
-    }
-
-    .slot {
-      width: clamp(32px, 7vw, 58px);
-      aspect-ratio: .82;
-      display: grid;
-      place-items: center;
-      border: 1px solid rgba(62,242,255,.42);
-      border-radius: 9px;
-      color: var(--cyan);
-      background: rgba(62,242,255,.07);
-      font-family: "Courier New", monospace;
-      font-size: clamp(1.15rem, 4vw, 2rem);
-      font-weight: 900;
-    }
-
     .message {
       min-height: 24px;
       margin-top: 11px;
@@ -254,23 +231,6 @@
       color: var(--yellow);
       background: rgba(255,214,90,.05);
     }
-
-    .success-screen { text-align: center; padding: clamp(24px, 8vh, 70px) 10px; }
-    .success-mark {
-      width: 96px;
-      height: 96px;
-      margin: 0 auto 22px;
-      display: grid;
-      place-items: center;
-      border: 2px solid var(--green);
-      border-radius: 50%;
-      color: var(--green);
-      font-size: 3rem;
-      box-shadow: 0 0 40px rgba(66,255,155,.25), inset 0 0 28px rgba(66,255,155,.12);
-      animation: pulse 1.8s ease-in-out infinite;
-    }
-
-    @keyframes pulse { 50% { transform: scale(1.04); box-shadow: 0 0 56px rgba(66,255,155,.38); } }
 
     .admin-card {
       padding: 16px;
@@ -317,8 +277,7 @@
         { id: "logica", name: "Archivio logico", code: "LOGICA4" },
         { id: "informatica", name: "Laboratorio informatico", code: "BYTE9" },
         { id: "assistenza", name: "Sala assistenza", code: "RETE2" }
-      ],
-      finalPassword: "ZERO2026"
+      ]
     };
 
     const KEYS = {
@@ -366,7 +325,6 @@
     function emptyProgress(config) {
       return {
         completed: Object.fromEntries(config.rooms.map(room => [room.id, false])),
-        finalUnlocked: false,
         updatedAt: new Date().toISOString()
       };
     }
@@ -507,8 +465,11 @@
         <p>${completedCount} aree completate su ${config.rooms.length}.</p>
         <div class="progress-track" aria-label="Avanzamento ${percent}%"><div class="progress-bar" style="width:${percent}%"></div></div>
         <div class="room-list">${roomsHtml}</div>
+        ${completedCount === config.rooms.length ? `
+          <div class="locked" style="border-color:rgba(66,255,155,.48);color:var(--green);background:rgba(66,255,155,.07)">
+            TUTTE LE STANZE COMPLETATE — I quattro frammenti sono stati convalidati. Cercate nell’ambiente l’indizio che stabilisce come comporli.
+          </div>` : ""}
         <div class="actions">
-          <button class="btn ${completedCount === config.rooms.length ? "" : "secondary"}" id="goExit">Vai alla porta d’uscita</button>
           <button class="btn secondary" id="switchClass">Cambia classe</button>
         </div>`;
 
@@ -529,63 +490,7 @@
         });
       });
 
-      document.getElementById("goExit").addEventListener("click", renderExit);
       document.getElementById("switchClass").addEventListener("click", renderSetup);
-    }
-
-    function renderExit() {
-      const active = requireClass();
-      if (!active) return;
-      const config = loadConfig();
-      const progress = loadProgress(active, config);
-      const allDone = config.rooms.every(room => progress.completed[room.id]);
-      const slots = [...config.finalPassword].map(() => `<span class="slot">_</span>`).join("");
-
-      screen.innerHTML = `
-        <p class="eyebrow">Protocollo di uscita</p>
-        <h1>Porta principale</h1>
-        <div class="password-slots">${slots}</div>
-        ${allDone ? `
-          <p>Tutte le aree sono state completate. Ricostruite e inserite la password finale.</p>
-          <form id="exitForm" autocomplete="off">
-            <div class="field">
-              <label for="finalPassword">Password di uscita</label>
-              <input id="finalPassword" type="text" maxlength="${Math.max(config.finalPassword.length + 4, 12)}" placeholder="Inserisci la password" required>
-            </div>
-            <button class="btn" type="submit">Sblocca la porta</button>
-            <div id="exitMessage" class="message"></div>
-          </form>` : `
-          <div class="locked">ACCESSO BLOCCATO — Completate tutte le stanze prima di tentare l’uscita.</div>`}
-        <div class="actions"><button class="btn secondary" id="backDashboard">Torna al terminale</button></div>`;
-
-      document.getElementById("backDashboard").addEventListener("click", renderDashboard);
-      const form = document.getElementById("exitForm");
-      if (form) {
-        form.addEventListener("submit", event => {
-          event.preventDefault();
-          const answer = document.getElementById("finalPassword").value;
-          if (normalize(answer) !== normalize(config.finalPassword)) {
-            showMessage("exitMessage", "ACCESSO NEGATO — La password non è corretta.");
-            return;
-          }
-          const current = loadProgress(active, config);
-          current.finalUnlocked = true;
-          saveProgress(active, current);
-          renderSuccess();
-        });
-      }
-    }
-
-    function renderSuccess() {
-      const active = requireClass();
-      if (!active) return;
-      screen.innerHTML = `
-        <div class="success-screen">
-          <div class="success-mark">✓</div>
-          <p class="eyebrow">Accesso autorizzato</p>
-          <h1>Operazione Zero completata</h1>
-          <p>La classe <strong>${escapeHtml(active)}</strong> ha ripristinato il sistema e sbloccato la porta d’uscita.</p>
-        </div>`;
     }
 
     function renderAdminLogin() {
@@ -657,13 +562,6 @@
             <h3>Codici delle stanze</h3>
             ${roomFields}
           </div>
-          <div class="admin-card">
-            <h3>Uscita finale</h3>
-            <div class="field">
-              <label for="finalPasswordInput">Password finale</label>
-              <input id="finalPasswordInput" value="${escapeHtml(config.finalPassword)}" required>
-            </div>
-          </div>
           <div class="actions">
             <button class="btn" type="submit">Salva configurazione</button>
             <button class="btn secondary" type="button" id="adminToSetup">Selezione classe</button>
@@ -700,7 +598,6 @@
           name: document.getElementById(`roomName${index}`).value.trim(),
           code: document.getElementById(`roomCode${index}`).value.trim()
         }));
-        config.finalPassword = document.getElementById("finalPasswordInput").value.trim();
         saveConfig(config);
         showMessage("configMessage", "Configurazione salvata.", "success");
         setTimeout(renderAdmin, 500);
@@ -727,11 +624,9 @@
       const active = getActiveClass();
       if (requestedView === "selezione" || requestedView === "setup") return renderSetup();
       if (requestedView === "avanzamento" || requestedView === "dashboard") return renderDashboard();
-      if (requestedView === "uscita" || requestedView === "exit") return renderExit();
+      if (requestedView === "uscita" || requestedView === "exit") return renderDashboard();
       if (requestedView === "admin") return renderAdminLogin();
       if (!active) return renderSetup();
-      const progress = loadProgress(active);
-      if (progress.finalUnlocked) return renderSuccess();
       return renderDashboard();
     }
 
