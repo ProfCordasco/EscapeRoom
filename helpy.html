@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HELPY // Assistente virtuale</title>
+  <style>
+    :root { color-scheme: dark; --bg:#020b13; --panel:#071a25; --line:#16506a; --cyan:#42e7ff; --green:#55f2a4; --muted:#91a9b7; }
+    * { box-sizing:border-box; }
+    html,body { width:100%; height:100%; margin:0; overflow:hidden; font-family:Inter,Segoe UI,Arial,sans-serif; background:transparent; color:#e9fbff; }
+    .shell { height:100%; min-height:340px; display:flex; flex-direction:column; overflow:hidden; border:1px solid var(--line); border-radius:18px; background:linear-gradient(145deg,rgba(7,26,37,.98),rgba(1,9,16,.98)); box-shadow:0 0 28px rgba(66,231,255,.18),inset 0 0 40px rgba(12,97,123,.1); }
+    header { display:flex; align-items:center; gap:12px; padding:14px 16px; border-bottom:1px solid var(--line); background:rgba(6,22,31,.92); }
+    .avatar { width:44px; height:44px; display:grid; place-items:center; border:1px solid var(--cyan); border-radius:50%; color:var(--cyan); font-weight:900; box-shadow:0 0 14px rgba(66,231,255,.25); }
+    .title { min-width:0; flex:1; }
+    .title strong { display:block; letter-spacing:.12em; color:var(--cyan); }
+    .status { margin-top:3px; font-size:.78rem; color:var(--green); }
+    .status.offline { color:#ff6478; }
+    #reset { border:1px solid #31566a; border-radius:9px; padding:8px 10px; color:#a9c3d0; background:#07141d; cursor:pointer; }
+    #chat { flex:1; min-height:0; overflow-y:auto; padding:18px; scrollbar-color:#1f637d transparent; }
+    .row { display:flex; margin:0 0 12px; }
+    .row.user { justify-content:flex-end; }
+    .bubble { max-width:82%; padding:11px 13px; border-radius:14px; line-height:1.38; white-space:pre-line; }
+    .bot .bubble { background:#0b2837; border:1px solid #15506a; border-bottom-left-radius:4px; }
+    .user .bubble { background:#124736; border:1px solid #1a7556; border-bottom-right-radius:4px; }
+    .typing { color:var(--muted); font-style:italic; }
+    form { display:flex; gap:10px; padding:13px; border-top:1px solid var(--line); background:#04121b; }
+    input { flex:1; min-width:0; border:1px solid #24566d; border-radius:11px; padding:12px 14px; background:#020c13; color:#fff; outline:none; font-size:1rem; }
+    input:focus { border-color:var(--cyan); box-shadow:0 0 0 2px rgba(66,231,255,.12); }
+    button[type=submit] { border:0; border-radius:11px; padding:0 18px; background:var(--cyan); color:#001117; font-weight:800; cursor:pointer; }
+    button:disabled,input:disabled { cursor:not-allowed; opacity:.48; }
+    @media (max-width:520px){ .shell{border-radius:10px}.bubble{max-width:92%}#reset{font-size:0}#reset::after{content:'↻';font-size:1.15rem} }
+  </style>
+</head>
+<body>
+<main class="shell" aria-label="Chat con Helpy">
+  <header>
+    <div class="avatar">H</div>
+    <div class="title"><strong>HELPY // v0.8</strong><div id="status" class="status">● ONLINE — assistenza sperimentale</div></div>
+    <button id="reset" type="button">RIAVVIA</button>
+  </header>
+  <section id="chat" aria-live="polite"></section>
+  <form id="form" autocomplete="off">
+    <input id="answer" aria-label="Scrivi una risposta" placeholder="Scrivete qui la vostra risposta…" maxlength="180">
+    <button id="send" type="submit">INVIA</button>
+  </form>
+</main>
+<script>
+(() => {
+  const chat = document.querySelector('#chat');
+  const form = document.querySelector('#form');
+  const input = document.querySelector('#answer');
+  const send = document.querySelector('#send');
+  const status = document.querySelector('#status');
+  const reset = document.querySelector('#reset');
+
+  const steps = [
+    { q:'Primo ticket: un computer non si accende. Qual è il primo controllo che fareste?', keys:['alimentazione','corrente','presa','cavo','spina'], ok:['Sensato. Cominciate dalle cause più semplici: sorprendentemente raro.','Controllo essenziale superato. Nessun cacciavite usato inutilmente.'] },
+    { q:'Il computer ora è acceso, ma il monitor mostra “Nessun segnale”. Che cosa controllereste?', keys:['hdmi','video','displayport','cavo','collegamento','scheda video','gpu'], ok:['Buona risposta. Il monitor non è il computer: finalmente qualcuno lo sa.','Accettabile. Verificare il collegamento video prima di dichiarare il PC da buttare.'] },
+    { q:'Un sito non si apre, ma gli altri funzionano. Riavviereste subito il router? Motivate brevemente.', keys:['no','sito','server','indirizzo','url','browser','temporaneo'], ok:['Esatto: un solo sito irraggiungibile non dimostra un guasto del router.','Diagnosi prudente rilevata. Helpy approva con moderazione.'] },
+    { q:'Un utente comunica la propria password in chat. Che cosa gli consigliereste?', keys:['cambiare','modificare','non condividere','segreta','password nuova','reimpostare'], ok:['Corretto. Una password condivisa deve essere sostituita.','Risposta responsabile. Sto quasi rivalutando gli esseri umani.'] },
+    { q:'Ultimo caso: la stampante è accesa, ma il documento resta in coda. Indicate almeno un controllo ragionevole.', keys:['coda','carta','connessione','rete','errore','stampante predefinita','riavviare','annullare'], ok:['Verifica completata. Il vostro profilo tecnico è quasi accettabile.','Test concluso. Forse siete pronti per l’informazione che state cercando.'] }
+  ];
+  const retry = [
+    'Risposta troppo creativa. Provate con un controllo tecnico concreto.',
+    'Non riesco a validarla. Riformulate indicando che cosa controllereste.',
+    'Il mio entusiasmo artificiale sta diminuendo. Ragionate sul sintomo prima di intervenire.',
+    'Tentativo registrato. Utilità non rilevata. Provate ancora.'
+  ];
+  let index = 0, locked = false;
+  const pick = a => a[Math.floor(Math.random()*a.length)];
+  const clean = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  const wait = ms => new Promise(r => setTimeout(r,ms));
+
+  function message(text, who='bot', extra='') {
+    const row=document.createElement('div'); row.className=`row ${who}`;
+    const bubble=document.createElement('div'); bubble.className=`bubble ${extra}`; bubble.textContent=text;
+    row.appendChild(bubble); chat.appendChild(row); chat.scrollTop=chat.scrollHeight; return row;
+  }
+  async function bot(text, delay=650) {
+    locked=true; input.disabled=true; send.disabled=true;
+    const t=message('HELPY sta scrivendo…','bot','typing');
+    await wait(delay); t.remove(); message(text); locked=false; input.disabled=false; send.disabled=false; input.focus();
+  }
+  function offline() {
+    locked=true; input.disabled=true; send.disabled=true;
+    status.textContent='● OFFLINE — connessione interrotta'; status.classList.add('offline');
+    message('Connessione interrotta.\nHELPY è offline.');
+  }
+  async function ghost() {
+    locked=true; input.disabled=true; send.disabled=true;
+    const t=message('HELPY sta scrivendo…','bot','typing');
+    await wait(3300); t.textContent='HELPY sta ancora scrivendo…'; await wait(2500); t.remove(); offline();
+  }
+  async function begin() {
+    chat.innerHTML=''; index=0; locked=false; status.textContent='● ONLINE — assistenza sperimentale'; status.classList.remove('offline'); input.disabled=false; send.disabled=false; input.value='';
+    await bot('Salve, aspiranti tecnici. Sono HELPY, assistente virtuale sperimentale. Rispondete alle mie domande e cercherò di non giudicarvi apertamente.\n\n'+steps[0].q,450);
+  }
+  form.addEventListener('submit', async e => {
+    e.preventDefault(); if(locked) return;
+    const value=input.value.trim(); if(!value) return;
+    message(value,'user'); input.value='';
+    const normalized=clean(value);
+    if(!steps[index].keys.some(k => normalized.includes(clean(k)))) { await bot(pick(retry)); return; }
+    const reply=pick(steps[index].ok); index++;
+    if(index < steps.length) await bot(reply+'\n\n'+steps[index].q);
+    else { await bot(reply+'\n\nAdesso posso finalmente comunicarvi ciò che vi serve…'); await ghost(); }
+  });
+  reset.addEventListener('click',begin);
+  begin();
+})();
+</script>
+</body>
+</html>
