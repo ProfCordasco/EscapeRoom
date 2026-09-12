@@ -34,20 +34,7 @@ body{
   height:100vh;
   position:relative;
   overflow:hidden;
-  background:
-    radial-gradient(circle at 50% 20%,rgba(48,146,255,.18),transparent 32%),
-    linear-gradient(145deg,var(--bg),var(--bg2) 58%,#020813);
-}
-.app::before{
-  content:"";
-  position:absolute;
-  inset:0;
-  background:
-    linear-gradient(rgba(88,230,255,.05) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(88,230,255,.05) 1px,transparent 1px);
-  background-size:48px 48px;
-  mask-image:linear-gradient(to bottom,rgba(0,0,0,.7),transparent 90%);
-  pointer-events:none;
+  background:linear-gradient(145deg,var(--bg),var(--bg2) 58%,#020813);
 }
 .globe{
   position:absolute;
@@ -313,17 +300,6 @@ button{
 </head>
 <body>
 <div class="app">
-  <div class="globe"></div>
-
-  <div class="frame">
-    <i class="corner c1"></i><i class="corner c2"></i><i class="corner c3"></i><i class="corner c4"></i>
-  </div>
-
-  <div class="header">
-    <div class="brand">MUSEO DELL'INFORMATICA</div>
-    <div class="tag">Configurazione del percorso</div>
-  </div>
-
   <main class="card">
     <div class="kicker">Accesso visitatori</div>
     <h1>CONFIGURA LA VISITA</h1>
@@ -367,10 +343,6 @@ button{
     </details>
   </main>
 
-  <div class="footer">
-    <span><i class="online"></i>Sistema museo online</span>
-    <span>Sessione locale</span>
-  </div>
 </div>
 
 <script>
