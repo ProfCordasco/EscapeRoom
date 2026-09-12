@@ -1,0 +1,534 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Configurazione percorso — Museo dell'Informatica</title>
+<style>
+:root{
+  --bg:#03101d;
+  --bg2:#071d31;
+  --panel:rgba(6,24,40,.94);
+  --line:#236885;
+  --cyan:#58e6ff;
+  --cyan2:#a8f6ff;
+  --green:#53efa7;
+  --red:#ff6879;
+  --text:#eefcff;
+  --muted:#9db8c7;
+}
+*{box-sizing:border-box}
+html,body{
+  width:100%;height:100%;margin:0;
+  font-family:Inter,Segoe UI,Arial,sans-serif;
+  color:var(--text);
+  background:transparent;
+}
+body{
+  display:grid;
+  place-items:center;
+  overflow:hidden;
+}
+.app{
+  width:100vw;
+  height:100vh;
+  position:relative;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 50% 20%,rgba(48,146,255,.18),transparent 32%),
+    linear-gradient(145deg,var(--bg),var(--bg2) 58%,#020813);
+}
+.app::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:
+    linear-gradient(rgba(88,230,255,.05) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(88,230,255,.05) 1px,transparent 1px);
+  background-size:48px 48px;
+  mask-image:linear-gradient(to bottom,rgba(0,0,0,.7),transparent 90%);
+  pointer-events:none;
+}
+.globe{
+  position:absolute;
+  width:52vw;
+  height:52vw;
+  left:24vw;
+  top:-22vw;
+  border-radius:50%;
+  border:1px solid rgba(88,230,255,.12);
+  box-shadow:
+    0 0 90px rgba(47,140,255,.08),
+    inset 0 0 80px rgba(47,140,255,.06);
+}
+.globe::before,.globe::after{
+  content:"";
+  position:absolute;
+  border:1px solid rgba(88,230,255,.10);
+  border-radius:50%;
+}
+.globe::before{inset:13%}
+.globe::after{inset:27%}
+
+.frame{
+  position:absolute;
+  inset:5%;
+  border:1px solid rgba(88,230,255,.28);
+  border-radius:26px;
+  box-shadow:inset 0 0 36px rgba(88,230,255,.04);
+}
+.corner{
+  position:absolute;
+  width:54px;height:54px;
+  border-color:var(--cyan);
+  opacity:.7;
+}
+.c1{left:-1px;top:-1px;border-left:3px solid;border-top:3px solid;border-radius:24px 0 0 0}
+.c2{right:-1px;top:-1px;border-right:3px solid;border-top:3px solid;border-radius:0 24px 0 0}
+.c3{left:-1px;bottom:-1px;border-left:3px solid;border-bottom:3px solid;border-radius:0 0 0 24px}
+.c4{right:-1px;bottom:-1px;border-right:3px solid;border-bottom:3px solid;border-radius:0 0 24px 0}
+
+.header{
+  position:absolute;
+  left:8%;right:8%;top:8%;
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:20px;
+}
+.brand{
+  letter-spacing:.22em;
+  font-size:clamp(12px,1.15vw,19px);
+  font-weight:800;
+  color:var(--cyan2);
+}
+.tag{
+  color:var(--muted);
+  letter-spacing:.1em;
+  font-size:clamp(10px,.9vw,15px);
+  text-transform:uppercase;
+  text-align:right;
+}
+
+.card{
+  position:absolute;
+  left:50%;top:52%;
+  transform:translate(-50%,-50%);
+  width:min(900px,86vw);
+  padding:clamp(26px,3.2vw,48px);
+  border:1px solid rgba(88,230,255,.32);
+  border-radius:28px;
+  background:linear-gradient(145deg,rgba(5,21,37,.96),rgba(3,13,25,.93));
+  box-shadow:0 24px 80px rgba(0,0,0,.28),inset 0 0 38px rgba(88,230,255,.04);
+}
+.kicker{
+  color:var(--cyan);
+  letter-spacing:.2em;
+  font-size:clamp(11px,.9vw,15px);
+  font-weight:800;
+  text-transform:uppercase;
+}
+h1{
+  margin:.35em 0 .25em;
+  font-size:clamp(34px,4.8vw,68px);
+  line-height:.98;
+  letter-spacing:-.04em;
+}
+.lead{
+  margin:0 0 28px;
+  color:#cfe5ee;
+  font-size:clamp(14px,1.2vw,20px);
+  line-height:1.5;
+}
+.field-label{
+  display:block;
+  margin-bottom:8px;
+  color:var(--muted);
+  font-size:clamp(11px,.9vw,15px);
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  font-weight:700;
+}
+input{
+  width:100%;
+  border:1px solid rgba(88,230,255,.28);
+  border-radius:16px;
+  background:rgba(2,12,22,.86);
+  color:#fff;
+  outline:none;
+  padding:16px 18px;
+  font-size:clamp(16px,1.35vw,22px);
+  text-transform:uppercase;
+  box-shadow:inset 0 0 20px rgba(47,140,255,.04);
+}
+input:focus{
+  border-color:rgba(88,230,255,.72);
+  box-shadow:0 0 0 3px rgba(88,230,255,.08);
+}
+.mode-title{
+  margin:25px 0 10px;
+  color:var(--muted);
+  font-size:clamp(11px,.9vw,15px);
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  font-weight:700;
+}
+.modes{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+}
+.mode{
+  position:relative;
+  padding:18px;
+  border-radius:18px;
+  border:1px solid rgba(88,230,255,.21);
+  background:rgba(8,31,49,.50);
+  cursor:pointer;
+  transition:.18s ease;
+  min-height:118px;
+}
+.mode:hover{
+  transform:translateY(-2px);
+  border-color:rgba(88,230,255,.45);
+}
+.mode.selected{
+  border-color:var(--cyan);
+  box-shadow:0 0 0 2px rgba(88,230,255,.08),0 0 26px rgba(88,230,255,.08);
+  background:rgba(11,43,64,.78);
+}
+.mode strong{
+  display:block;
+  font-size:clamp(18px,1.5vw,25px);
+  color:#fff;
+  margin-bottom:7px;
+}
+.mode span{
+  display:block;
+  color:var(--muted);
+  line-height:1.4;
+  font-size:clamp(12px,1vw,16px);
+}
+.mode .dot{
+  position:absolute;
+  right:16px;
+  top:16px;
+  width:14px;height:14px;
+  border-radius:50%;
+  border:2px solid rgba(88,230,255,.6);
+}
+.mode.selected .dot{
+  background:var(--cyan);
+  box-shadow:0 0 12px rgba(88,230,255,.65);
+}
+
+.actions{
+  display:flex;
+  gap:12px;
+  align-items:center;
+  margin-top:28px;
+  flex-wrap:wrap;
+}
+button{
+  border:1px solid rgba(88,230,255,.55);
+  border-radius:14px;
+  padding:14px 23px;
+  font:800 clamp(12px,1vw,16px) Inter,Segoe UI,Arial,sans-serif;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  cursor:pointer;
+}
+.primary{
+  background:linear-gradient(180deg,#9af5ff,#4bdcf2);
+  color:#031019;
+  box-shadow:0 0 25px rgba(75,220,242,.12);
+}
+.secondary{
+  background:rgba(5,23,39,.75);
+  color:var(--cyan2);
+  border-color:rgba(88,230,255,.25);
+}
+.message{
+  min-height:22px;
+  margin-top:14px;
+  font-size:14px;
+  color:var(--muted);
+}
+.message.ok{color:var(--green)}
+.message.err{color:#ff9aa7}
+
+.teacher{
+  margin-top:20px;
+  padding-top:18px;
+  border-top:1px solid rgba(88,230,255,.12);
+}
+.teacher summary{
+  cursor:pointer;
+  color:#7994a4;
+  font-size:12px;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  user-select:none;
+}
+.teacher-box{
+  margin-top:12px;
+  padding:14px;
+  border-radius:14px;
+  background:rgba(3,13,24,.58);
+  color:var(--muted);
+  font-size:13px;
+  line-height:1.45;
+}
+.teacher-box button{
+  margin-top:10px;
+  color:#ffd7dc;
+  border-color:rgba(255,104,121,.35);
+  background:rgba(65,9,18,.44);
+}
+.footer{
+  position:absolute;
+  left:8%;right:8%;bottom:4%;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  color:#708e9d;
+  font-size:clamp(9px,.72vw,12px);
+  text-transform:uppercase;
+  letter-spacing:.1em;
+}
+.online{
+  display:inline-block;
+  width:7px;height:7px;
+  border-radius:50%;
+  background:var(--green);
+  box-shadow:0 0 9px var(--green);
+  margin-right:7px;
+}
+@media(max-width:700px){
+  .card{width:92vw;max-height:78vh;overflow:auto}
+  .modes{grid-template-columns:1fr}
+  .header{top:5%}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="globe"></div>
+
+  <div class="frame">
+    <i class="corner c1"></i><i class="corner c2"></i><i class="corner c3"></i><i class="corner c4"></i>
+  </div>
+
+  <div class="header">
+    <div class="brand">MUSEO DELL'INFORMATICA</div>
+    <div class="tag">Configurazione del percorso</div>
+  </div>
+
+  <main class="card">
+    <div class="kicker">Accesso visitatori</div>
+    <h1>CONFIGURA LA VISITA</h1>
+    <p class="lead">
+      Inserite la classe e scegliete la modalità. La configurazione verrà mantenuta per tutto il percorso nel museo.
+    </p>
+
+    <label class="field-label" for="classe">Classe</label>
+    <input id="classe" type="text" maxlength="12" autocomplete="off" placeholder="Es. 2A">
+
+    <div class="mode-title">Modalità</div>
+    <div class="modes">
+      <div class="mode" data-mode="consolidamento" tabindex="0">
+        <i class="dot"></i>
+        <strong>CONSOLIDAMENTO</strong>
+        <span>Per chi ha appena concluso gli argomenti e deve mettere alla prova ciò che ha imparato.</span>
+      </div>
+
+      <div class="mode" data-mode="ripasso" tabindex="0">
+        <i class="dot"></i>
+        <strong>RIPASSO</strong>
+        <span>Per chi torna nel museo per recuperare e verificare le conoscenze dell'anno precedente.</span>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="primary" id="startBtn">Avvia il percorso</button>
+      <button class="secondary" id="loadBtn">Riprendi configurazione</button>
+    </div>
+
+    <div class="message" id="message"></div>
+
+    <details class="teacher">
+      <summary>Gestione docente</summary>
+      <div class="teacher-box">
+        Il reset cancella solamente i dati della combinazione classe + modalità attualmente selezionata.
+        Le altre classi non vengono modificate.
+        <br>
+        <button id="resetBtn">Reset percorso selezionato</button>
+      </div>
+    </details>
+  </main>
+
+  <div class="footer">
+    <span><i class="online"></i>Sistema museo online</span>
+    <span>Sessione locale</span>
+  </div>
+</div>
+
+<script>
+const classeInput = document.getElementById("classe");
+const modes = [...document.querySelectorAll(".mode")];
+const msg = document.getElementById("message");
+let selectedMode = "";
+
+function normalizeClass(v){
+  return (v || "")
+    .trim()
+    .replace(/\s+/g,"")
+    .toUpperCase();
+}
+
+function chooseMode(mode){
+  selectedMode = mode;
+  modes.forEach(el => el.classList.toggle("selected", el.dataset.mode === mode));
+}
+
+modes.forEach(el => {
+  el.addEventListener("click", () => chooseMode(el.dataset.mode));
+  el.addEventListener("keydown", e => {
+    if(e.key === "Enter" || e.key === " "){
+      e.preventDefault();
+      chooseMode(el.dataset.mode);
+    }
+  });
+});
+
+function keyPrefix(classe, mode){
+  return `museoInfo_${classe}_${mode}`;
+}
+
+function randomPassword(){
+  // 4 cifre; evita 0000 e sequenze troppo banali.
+  let p;
+  const banned = new Set(["0000","1111","1234","4321"]);
+  do{
+    p = String(Math.floor(1000 + Math.random() * 9000));
+  }while(banned.has(p));
+  return p;
+}
+
+function ensurePassword(classe, mode){
+  const key = `${keyPrefix(classe,mode)}_password`;
+  let pwd = localStorage.getItem(key);
+  if(!pwd){
+    pwd = randomPassword();
+    localStorage.setItem(key,pwd);
+  }
+  return pwd;
+}
+
+function saveConfiguration(){
+  const classe = normalizeClass(classeInput.value);
+
+  if(!classe){
+    showMessage("Inserite la classe.", "err");
+    classeInput.focus();
+    return;
+  }
+  if(!selectedMode){
+    showMessage("Selezionate Consolidamento oppure Ripasso.", "err");
+    return;
+  }
+
+  localStorage.setItem("museoInfo_classe", classe);
+  localStorage.setItem("museoInfo_modalita", selectedMode);
+
+  // Crea la password una sola volta per questa classe + modalità.
+  ensurePassword(classe, selectedMode);
+
+  classeInput.value = classe;
+
+  const nomeModalita =
+    selectedMode === "ripasso" ? "RIPASSO" : "CONSOLIDAMENTO";
+
+  showMessage(`Configurazione salvata: ${classe} · ${nomeModalita}`, "ok");
+
+  /*
+    COLLEGAMENTO A GENIALLY:
+    Se questa pagina viene usata come pagina autonoma, qui puoi
+    sostituire "#" con l'URL della pagina/slide successiva.
+
+    Esempio:
+    window.location.href = "atrio.html";
+
+    Se invece è incorporata in Genially tramite iframe, lascia così
+    e collega il passaggio alla slide Atrio direttamente in Genially.
+  */
+}
+
+function loadConfiguration(){
+  const classe = localStorage.getItem("museoInfo_classe") || "";
+  const mode = localStorage.getItem("museoInfo_modalita") || "";
+
+  if(!classe || !["ripasso","consolidamento"].includes(mode)){
+    showMessage("Non è presente alcuna configurazione salvata.", "err");
+    return;
+  }
+
+  classeInput.value = classe;
+  chooseMode(mode);
+
+  const nomeModalita = mode === "ripasso" ? "RIPASSO" : "CONSOLIDAMENTO";
+  showMessage(`Configurazione caricata: ${classe} · ${nomeModalita}`, "ok");
+}
+
+function resetSelectedPath(){
+  const classe = normalizeClass(classeInput.value);
+  const mode = selectedMode;
+
+  if(!classe || !mode){
+    showMessage("Prima selezionate classe e modalità da resettare.", "err");
+    return;
+  }
+
+  const ok = confirm(
+    `Resettare tutti i dati di ${classe} · ${mode.toUpperCase()}?\n\nLe altre classi non verranno modificate.`
+  );
+  if(!ok) return;
+
+  const prefix = keyPrefix(classe,mode) + "_";
+  const keys = [];
+
+  for(let i=0;i<localStorage.length;i++){
+    const k = localStorage.key(i);
+    if(k && k.startsWith(prefix)) keys.push(k);
+  }
+
+  keys.forEach(k => localStorage.removeItem(k));
+
+  // Se la configurazione attiva coincide, lasciamo classe/modalità selezionate
+  // ma il nuovo percorso riceverà una nuova password al prossimo avvio.
+  showMessage(`Percorso ${classe} · ${mode.toUpperCase()} azzerato.`, "ok");
+}
+
+function showMessage(text,type=""){
+  msg.textContent = text;
+  msg.className = "message" + (type ? " " + type : "");
+}
+
+document.getElementById("startBtn").addEventListener("click", saveConfiguration);
+document.getElementById("loadBtn").addEventListener("click", loadConfiguration);
+document.getElementById("resetBtn").addEventListener("click", resetSelectedPath);
+
+classeInput.addEventListener("keydown", e => {
+  if(e.key === "Enter") saveConfiguration();
+});
+
+// Se esiste già una configurazione, la precompila senza avviare nulla.
+(() => {
+  const c = localStorage.getItem("museoInfo_classe");
+  const m = localStorage.getItem("museoInfo_modalita");
+  if(c) classeInput.value = c;
+  if(["ripasso","consolidamento"].includes(m)) chooseMode(m);
+})();
+</script>
+</body>
+</html>
