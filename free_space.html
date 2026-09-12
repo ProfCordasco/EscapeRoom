@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Operazione Zero // Recupero spazio</title>
+<style>
+:root{--navy:#06111d;--panel:#0d2234;--cyan:#51e8ff;--green:#42f59b;--red:#ff5571;--text:#effaff;--muted:#9eb4c3}
+*{box-sizing:border-box}html,body{height:100%;margin:0;overflow:hidden;font-family:Segoe UI,Arial,sans-serif;background:#020812;color:var(--text);user-select:none}
+body{background:radial-gradient(circle at 70% 20%,#113452 0,#071525 34%,#020812 75%)}
+#desktop{position:relative;height:calc(100% - 48px);padding:22px;background-image:linear-gradient(rgba(52,177,220,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(52,177,220,.04) 1px,transparent 1px);background-size:32px 32px}
+.warning{position:absolute;left:50%;top:24px;transform:translateX(-50%);width:min(620px,56vw);padding:16px 20px;border:1px solid #b98a26;border-left:6px solid #ffbd3e;border-radius:10px;background:rgba(37,28,9,.94);box-shadow:0 12px 35px #0008;z-index:5}
+.warning b{display:block;color:#ffd980;font-size:1.08rem;margin-bottom:5px}.warning span{color:#fff4d1}
+.storage{position:absolute;right:22px;top:22px;width:250px;padding:15px;border:1px solid #287491;border-radius:13px;background:rgba(7,24,37,.96);box-shadow:0 0 24px #26d4ff22;z-index:6}
+.storage-head{display:flex;justify-content:space-between;align-items:center;font-weight:700}.storage strong{font-size:1.3rem;color:var(--cyan)}
+.bar{height:9px;margin:11px 0 7px;border-radius:20px;background:#02101a;overflow:hidden;border:1px solid #21485c}.bar i{display:block;height:100%;width:15%;background:linear-gradient(90deg,#ff5874,#ffc449);transition:width .5s ease,background .5s}
+.storage small{color:var(--muted)}
+.icons{display:grid;grid-template-columns:repeat(2,108px);gap:22px 18px;align-content:start;padding-top:115px;width:240px}
+.icon{min-height:88px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;padding:8px;border:1px solid transparent;border-radius:9px;color:white;text-align:center;font-size:.82rem;cursor:pointer}.icon:hover,.icon.sel{background:#55dfff17;border-color:#56dfff55}.glyph{font-size:2.25rem;filter:drop-shadow(0 0 8px #4bdfff55)}
+.window{position:absolute;display:none;min-width:430px;width:min(720px,68vw);height:min(470px,68vh);left:50%;top:53%;transform:translate(-50%,-50%);overflow:hidden;border:1px solid #3b7995;border-radius:13px;background:#eef3f7;color:#16212a;box-shadow:0 24px 70px #000d;z-index:20}.window.open{display:flex;flex-direction:column}.titlebar{height:43px;display:flex;align-items:center;padding:0 12px;background:#11293c;color:white}.titlebar b{flex:1}.close{border:0;border-radius:6px;background:transparent;color:white;font-size:1.25rem;cursor:pointer}.close:hover{background:#b52e43}.toolbar{display:flex;gap:8px;align-items:center;padding:9px 12px;background:#dae4eb;border-bottom:1px solid #b8c8d2;font-size:.88rem}.tool{padding:5px 9px;border:1px solid #aebdc7;border-radius:5px;background:#f8fbfd;cursor:pointer}.tool:hover{background:#e3f5ff}.files{flex:1;overflow:auto;padding:12px}.row{display:grid;grid-template-columns:2fr .7fr .9fr .55fr;align-items:center;gap:9px;padding:10px;border-bottom:1px solid #d0dae0}.row.head{position:sticky;top:0;background:#e4ebef;font-weight:700}.file{cursor:pointer}.file:hover{background:#dff4ff}.file.selected{background:#bfeaff}.tag{display:inline-block;padding:3px 6px;border-radius:5px;background:#ffe3b6;color:#684100;font-size:.76rem;font-weight:700}
+.actions{padding:11px 14px;background:#dae4eb;display:flex;justify-content:flex-end;gap:9px}.action{border:0;border-radius:7px;padding:9px 13px;background:#153f5a;color:white;font-weight:700;cursor:pointer}.action:disabled{opacity:.4;cursor:not-allowed}.action.danger{background:#ac3348}
+#context{position:fixed;display:none;min-width:190px;padding:6px;border:1px solid #4b6d7d;border-radius:8px;background:#f5f8fa;color:#18242c;box-shadow:0 10px 30px #0009;z-index:60}#context button{display:block;width:100%;padding:9px;text-align:left;border:0;background:transparent;cursor:pointer}#context button:hover{background:#dcecf5}
+#toast{position:fixed;left:50%;bottom:65px;transform:translateX(-50%) translateY(20px);opacity:0;padding:11px 16px;border:1px solid #3b7188;border-radius:9px;background:#071c2a;color:white;z-index:80;transition:.25s;pointer-events:none}#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#success{position:fixed;inset:0;display:none;place-items:center;padding:25px;background:#020a10e8;z-index:100}#success.show{display:grid}.success-card{width:min(650px,92vw);padding:35px;border:1px solid var(--green);border-radius:18px;background:linear-gradient(145deg,#09281e,#06151a);text-align:center;box-shadow:0 0 55px #42f59b3b}.check{font-size:4rem;color:var(--green)}.success-card h1{color:var(--green);letter-spacing:.08em}.digit{font-size:4.8rem;font-weight:900;color:white;text-shadow:0 0 20px var(--green)}
+.taskbar{height:48px;display:flex;align-items:center;gap:12px;padding:0 13px;background:#07131e;border-top:1px solid #214359}.start{width:34px;height:34px;display:grid;place-items:center;border-radius:7px;background:#1bb7dd;color:#00151d;font-weight:900}.taskbar span{font-size:.86rem;color:#c5d5df}.clock{margin-left:auto}
+@media(max-width:720px){.warning{left:18px;transform:none;width:calc(100% - 286px);font-size:.8rem}.storage{width:240px}.window{width:94vw;min-width:0}.row{grid-template-columns:1.7fr .6fr .8fr}.row>*:last-child{display:none}}
+</style>
+</head>
+<body>
+<main id="desktop">
+  <div class="warning"><b>⚠ SALVATAGGIO NON RIUSCITO</b><span>File di 7,8 GB non salvato. Libera spazio prima di procedere.</span></div>
+  <aside class="storage" aria-live="polite"><div class="storage-head"><span>💾 Spazio disponibile</span><strong id="space">1,2 GB</strong></div><div class="bar"><i id="meter"></i></div><small id="storageNote">Sono necessari almeno 7,8 GB.</small></aside>
+  <section class="icons">
+    <div class="icon" data-open="trash" data-context="trash"><div class="glyph">🗑️</div><span>Cestino</span></div>
+    <div class="icon" data-context="copy"><div class="glyph">📄</div><span>Presentazione_COPIA.pptx</span></div>
+    <div class="icon" data-open="downloads"><div class="glyph">📁</div><span>Download</span></div>
+    <div class="icon" data-action="shortcut"><div class="glyph">🌐</div><span>Portale scuola</span></div>
+    <div class="icon" data-open="cleanup"><div class="glyph">🧹</div><span>Pulizia disco</span></div>
+    <div class="icon" data-action="refresh"><div class="glyph">🔄</div><span>Aggiorna desktop</span></div>
+    <div class="icon" data-open="documents"><div class="glyph">📂</div><span>Documenti importanti</span></div>
+    <div class="icon" data-action="restart"><div class="glyph">⏻</div><span>Riavvia</span></div>
+  </section>
+</main>
+
+<div class="window" id="trash"><div class="titlebar"><b>Cestino</b><button class="close">×</button></div><div class="toolbar"><button class="tool" data-action="empty-trash">Svuota cestino</button><span>File già eliminati: 2,5 GB</span></div><div class="files"><div class="row head"><span>Nome</span><span>Dimensione</span><span>Data</span><span>Tipo</span></div><div class="row"><span>video_prova.mp4</span><span>1,7 GB</span><span>12/05/2024</span><span>Video</span></div><div class="row"><span>backup_obsoleto.zip</span><span>0,8 GB</span><span>03/02/2024</span><span>Archivio</span></div></div></div>
+
+<div class="window" id="downloads"><div class="titlebar"><b>Download — Dettagli</b><button class="close">×</button></div><div class="toolbar"><button class="tool" data-sort>Ordina per dimensione</button><button class="tool" data-info>Proprietà</button></div><div class="files" id="downloadFiles"><div class="row head"><span>Nome</span><span>Dimensione</span><span>Data</span><span>Tipo</span></div><div class="row file" data-file="old-video"><span>video_evento_DA_CANCELLARE.mp4</span><span>2,4 GB</span><span>18/01/2023</span><span class="tag">VECCHIO</span></div><div class="row file" data-file="manual"><span>manuale_lab.pdf</span><span>0,4 GB</span><span>08/09/2026</span><span>PDF</span></div><div class="row file" data-file="photos"><span>foto_progetto.zip</span><span>1,9 GB</span><span>10/09/2026</span><span>Archivio</span></div><div class="row file" data-file="installer"><span>programma_setup.exe</span><span>0,6 GB</span><span>11/09/2026</span><span>Applicazione</span></div></div><div class="actions"><button class="action danger" id="deleteDownload" disabled>Elimina selezionato</button></div></div>
+
+<div class="window" id="cleanup"><div class="titlebar"><b>Pulizia disco</b><button class="close">×</button></div><div class="files"><h3>File temporanei di sistema</h3><p>Questi file sono stati creati durante aggiornamenti già completati e non sono più necessari.</p><div class="row"><span>File temporanei</span><span>1,1 GB</span><span>Non necessari</span><span>✓</span></div><div class="row"><span>File di sistema</span><span>—</span><span>Protetti</span><span>🔒</span></div></div><div class="actions"><button class="action" data-action="temp-files">Rimuovi file temporanei</button></div></div>
+
+<div class="window" id="documents"><div class="titlebar"><b>Documenti importanti</b><button class="close">×</button></div><div class="files"><p><b>⚠ Cartella di lavoro protetta.</b></p><div class="row"><span>registro_studenti.xlsx</span><span>12 MB</span><span>Oggi</span><span>Foglio</span></div><div class="row"><span>relazione_finale.docx</span><span>8 MB</span><span>Oggi</span><span>Documento</span></div><div class="row"><span>presentazione_classe.pptx</span><span>35 MB</span><span>Ieri</span><span>Presentazione</span></div></div><div class="actions"><button class="action danger" data-action="protected">Elimina cartella</button></div></div>
+
+<div id="context"></div><div id="toast"></div>
+<section id="success"><div class="success-card"><div class="check">✓</div><h1>SPAZIO SUFFICIENTE</h1><p>Il file di 7,8 GB può essere salvato.</p><p>Lo spazio disponibile è ora di</p><div class="digit">8 GB</div><p><b>8 è una cifra del codice della stanza.</b></p></div></section>
+<footer class="taskbar"><div class="start">⊞</div><span>RECUPERO SPAZIO // POSTAZIONE ASSISTENZA</span><span class="clock" id="clock"></span></footer>
+<script>
+(()=>{
+let space=1.2, selected=null, completed=false;
+const done=new Set(), $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const gains={"empty-trash":2.5,"desktop-copy":.8,"old-video":2.4,"temp-files":1.1};
+function fmt(n){return n.toFixed(1).replace('.',',')+' GB'}
+function toast(text){const t=$('#toast');t.textContent=text;t.classList.add('show');clearTimeout(t._x);t._x=setTimeout(()=>t.classList.remove('show'),2400)}
+function update(){space=Math.round(space*10)/10;$('#space').textContent=fmt(space);$('#meter').style.width=Math.min(100,space/8*100)+'%';if(space>=8&&!completed){completed=true;$('#meter').style.background='var(--green)';$('#storageNote').textContent='Spazio sufficiente per il salvataggio.';setTimeout(()=>$('#success').classList.add('show'),700)}}
+function free(id,label){if(done.has(id)){toast('Operazione già eseguita.');return}done.add(id);space+=gains[id];update();toast(label+' Spazio liberato: '+fmt(gains[id]))}
+function openWin(id){$$('.window').forEach(w=>w.classList.remove('open'));$('#'+id)?.classList.add('open')}
+$$('.close').forEach(b=>b.onclick=()=>b.closest('.window').classList.remove('open'));
+$$('[data-open]').forEach(i=>i.ondblclick=()=>openWin(i.dataset.open));
+$$('.icon').forEach(i=>i.onclick=()=>{$$('.icon').forEach(x=>x.classList.remove('sel'));i.classList.add('sel')});
+$$('.file[data-file]').forEach(r=>r.onclick=()=>{selected=r.dataset.file;$$('.file').forEach(x=>x.classList.remove('selected'));r.classList.add('selected');$('#deleteDownload').disabled=false});
+$('#deleteDownload').onclick=()=>{if(!selected)return;if(selected==='old-video'){free('old-video','File vecchio eliminato.');$('[data-file="old-video"]').remove();selected=null;$('#deleteDownload').disabled=true}else toast('Il file non è indicato come eliminabile: operazione annullata.')};
+document.addEventListener('click',e=>{const a=e.target.closest('[data-action]');if(!a)return;const x=a.dataset.action;if(x==='empty-trash'){free(x,'Cestino svuotato.');$('#trash .files').innerHTML='<p>Il Cestino è vuoto.</p>'}else if(x==='desktop-copy'){free(x,'Copia eliminata.');a.remove()}else if(x==='temp-files'){free(x,'File temporanei rimossi.');a.disabled=true}else if(x==='shortcut')toast('È solo un collegamento: eliminarlo non libera spazio utile.');else if(x==='refresh')toast('Desktop aggiornato. Lo spazio disponibile non cambia.');else if(x==='restart')toast('Riavviare non libera spazio sul disco.');else if(x==='protected')toast('Operazione bloccata: contiene documenti di lavoro importanti.')});
+$('[data-sort]').onclick=()=>{const box=$('#downloadFiles'),rows=$$('.file').sort((a,b)=>parseFloat(b.children[1].textContent)-parseFloat(a.children[1].textContent));rows.forEach(r=>box.appendChild(r));toast('File ordinati dal più pesante al più leggero.')};
+$('[data-info]').onclick=()=>toast('Suggerimento: confrontate nome, dimensione e data dei file.');
+document.addEventListener('contextmenu',e=>{const icon=e.target.closest('[data-context]');if(!icon)return;e.preventDefault();const menu=$('#context'),type=icon.dataset.context;menu.innerHTML=type==='trash'?'<button data-action="empty-trash">Svuota cestino</button><button data-open-menu="trash">Apri</button>':'<button data-action="desktop-copy">Elimina</button><button>Proprietà</button>';menu.style.left=Math.min(e.clientX,innerWidth-210)+'px';menu.style.top=Math.min(e.clientY,innerHeight-110)+'px';menu.style.display='block'});
+document.addEventListener('click',e=>{if(e.target.dataset.openMenu)openWin(e.target.dataset.openMenu);if(!e.target.closest('#context'))$('#context').style.display='none'});
+setInterval(()=>$('#clock').textContent=new Date().toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'}),1000);update();
+})();
+</script>
+</body>
+</html>
