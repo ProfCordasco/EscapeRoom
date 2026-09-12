@@ -1,1 +1,85 @@
 
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Operazione Zero — Selezione classe</title>
+  <style>
+    :root { --bg:#030711; --panel:rgba(5,18,34,.92); --cyan:#3ef2ff; --green:#42ff9b; --red:#ff5575; --text:#e8fbff; --muted:#91b7c2; }
+    * { box-sizing:border-box; }
+    html,body { min-height:100%; }
+    body { margin:0; display:grid; place-items:center; color:var(--text); background:radial-gradient(circle at 50% 0,rgba(0,164,194,.25),transparent 45%),var(--bg); font-family:Inter,system-ui,sans-serif; }
+    .panel { width:min(760px,calc(100% - 28px)); padding:clamp(22px,5vw,46px); border:1px solid rgba(62,242,255,.35); border-radius:20px; background:var(--panel); box-shadow:0 0 30px rgba(62,242,255,.13); }
+    .eyebrow { margin:0 0 8px; color:var(--cyan); font:800 .8rem "Courier New",monospace; letter-spacing:.15em; text-transform:uppercase; }
+    h1 { margin:0 0 12px; font-size:clamp(1.8rem,5vw,3rem); }
+    p { color:var(--muted); line-height:1.5; }
+    label { display:block; margin:22px 0 8px; color:#c9f8ff; font-weight:750; }
+    select { width:100%; padding:13px; border:1px solid rgba(145,183,194,.4); border-radius:10px; color:var(--text); background:#071525; font:inherit; }
+    .actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:18px; }
+    button { min-height:44px; padding:11px 18px; border:1px solid rgba(62,242,255,.55); border-radius:10px; font:850 1rem inherit; cursor:pointer; }
+    #save { color:#001116; background:var(--cyan); }
+    #change { color:var(--cyan); background:transparent; }
+    #message { min-height:24px; margin-top:14px; color:var(--green); font-family:"Courier New",monospace; }
+    select:disabled { opacity:.65; }
+  </style>
+</head>
+<body>
+  <main class="panel">
+    <p class="eyebrow">Operazione Zero</p>
+    <h1>Seleziona la classe</h1>
+    <p>Seleziona la classe che partecipa alla missione e salva la scelta.</p>
+    <label for="classSelect">Classe</label>
+    <select id="classSelect"></select>
+    <div class="actions">
+      <button id="save" type="button">SALVA</button>
+      <button id="change" type="button">CAMBIA CLASSE</button>
+    </div>
+    <div id="message" aria-live="polite"></div>
+  </main>
+  <script>
+    "use strict";
+    const CLASSES = [
+      "1A","2A","3A","4A",
+      "1B","2B","3B","4B","5B",
+      "1C","2C","3C","4C","5C",
+      "1D","2D","3D","4D","5D",
+      "1E","2E","3E","4E","5E",
+      "1F","2F","3F","4F","5F",
+      "1L","2L","3L","4L","5L"
+    ];
+    const ACTIVE_CLASS_KEY = "oz_active_class_v1";
+    const PROGRESS_PREFIX = "oz_progress_v1_";
+    const select = document.getElementById("classSelect");
+    const message = document.getElementById("message");
+    select.innerHTML = CLASSES.map(name => `<option value="${name}">${name}</option>`).join("");
+
+    const active = localStorage.getItem(ACTIVE_CLASS_KEY);
+    if (active && CLASSES.includes(active)) {
+      select.value = active;
+      select.disabled = true;
+      message.textContent = `Classe ${active} già salvata.`;
+    }
+
+    document.getElementById("save").addEventListener("click", () => {
+      const selected = select.value;
+      localStorage.setItem(ACTIVE_CLASS_KEY, selected);
+      const progressKey = PROGRESS_PREFIX + encodeURIComponent(selected);
+      if (!localStorage.getItem(progressKey)) {
+        localStorage.setItem(progressKey, JSON.stringify({
+          completed: { osservazione:false, logica:false, informatica:false, assistenza:false },
+          updatedAt: new Date().toISOString()
+        }));
+      }
+      select.disabled = true;
+      message.textContent = `Classe ${selected} salvata. Puoi proseguire in Genially.`;
+    });
+
+    document.getElementById("change").addEventListener("click", () => {
+      select.disabled = false;
+      message.textContent = "Seleziona la nuova classe e premi SALVA.";
+      select.focus();
+    });
+  </script>
+</body>
+</html>
