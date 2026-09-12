@@ -1,1 +1,33 @@
 
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Stato dei servizi</title>
+<style>
+:root{--bg:#030b12;--panel:#081b28;--line:#286078;--cyan:#50e7ff;--green:#4af3a0;--amber:#ffd166;--text:#eafaff;--muted:#93aab8}
+*{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;overflow:hidden;font-family:Segoe UI,Arial,sans-serif;background:transparent;color:var(--text)}
+body{display:grid;place-items:center;padding:8px}
+.screen{width:100%;height:100%;min-height:300px;display:flex;flex-direction:column;overflow:hidden;border:1px solid var(--line);border-radius:18px;background:linear-gradient(145deg,#0a2231,#020a11);box-shadow:0 0 30px #42dcff25,inset 0 0 45px #0f60741c}
+.intro{padding:16px 20px;text-align:center;color:#d5e8f0}.intro b{display:block;color:var(--cyan);letter-spacing:.1em;margin-bottom:4px}.intro small{color:var(--muted)}
+.services{flex:1;display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:10px 18px 18px}
+.service{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;border:1px solid #285269;border-radius:14px;background:#061722;color:white;cursor:pointer;transition:.2s}.service:hover{transform:translateY(-3px);border-color:var(--cyan);background:#0a2838}.icon{font-size:clamp(2.3rem,7vw,4.7rem);filter:drop-shadow(0 0 12px #46ddff55)}.service span:last-child{font-weight:800;font-size:.82rem;letter-spacing:.06em}
+.detail{min-height:112px;margin:0 18px 18px;padding:17px 20px;border:1px solid #21495d;border-radius:12px;background:#020c13;display:flex;flex-direction:column;justify-content:center;text-align:center}.detail strong{color:var(--green);font-size:1.05rem;letter-spacing:.07em}.detail p{margin:7px 0 0;color:#c8dce6}.detail.wait strong{color:var(--amber)}
+@media(max-width:600px){.services{gap:6px;padding:6px}.service{border-radius:9px}.service span:last-child{font-size:.63rem}.detail{margin:0 6px 6px}.intro{padding:9px}}
+</style>
+</head>
+<body>
+<main class="screen">
+ <div class="intro"><b>PANNELLO DI MONITORAGGIO</b><small>Selezionate un servizio per consultarne lo stato.</small></div>
+ <section class="services">
+  <button class="service" data-name="POSTA ELETTRONICA" data-msg="Invio e ricezione dei messaggi regolarmente disponibili."><span class="icon">✉</span><span>POSTA</span></button>
+  <button class="service" data-name="AUTENTICAZIONE" data-msg="Controllo degli accessi e verifica delle credenziali operativi."><span class="icon">🔒</span><span>ACCESSI</span></button>
+  <button class="service" data-name="CONNESSIONE DI RETE" data-msg="Collegamento attivo e segnale stabile. Nessun intervento richiesto."><span class="icon">📶</span><span>RETE</span></button>
+  <button class="service" data-name="SERVIZIO DI STAMPA" data-msg="Un lavoro è in attesa di essere completato." data-wait="1"><span class="icon">🖨</span><span>STAMPA</span></button>
+ </section>
+ <section class="detail" id="detail"><strong>NESSUN SERVIZIO SELEZIONATO</strong><p>Il pannello è disponibile soltanto per la consultazione.</p></section>
+</main>
+<script>
+(()=>{const d=document.querySelector('#detail');document.querySelectorAll('.service').forEach(b=>b.addEventListener('click',()=>{d.classList.toggle('wait',!!b.dataset.wait);d.innerHTML='<strong>'+b.dataset.name+'</strong><p>'+b.dataset.msg+'</p>'}))})();
+</script>
+</body></html>
