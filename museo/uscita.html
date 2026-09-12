@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Security Gate — Museo dell'Informatica</title>
+<style>
+:root{
+  --bg:#020a13;--panel:#061827;--line:#225f78;
+  --cyan:#59e9ff;--cyan2:#c1f9ff;--green:#4cf0a4;
+  --red:#ff6578;--text:#f1fcff;--muted:#9ab7c7;
+}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden}
+body{font-family:Inter,Segoe UI,Arial,sans-serif;background:#020a13;color:var(--text)}
+.app{
+  width:100%;height:100%;
+  display:grid;place-items:center;padding:clamp(14px,3vw,38px);
+  background:
+    radial-gradient(circle at 50% 25%,rgba(45,147,230,.14),transparent 34%),
+    linear-gradient(145deg,#020a13,#071a2a 58%,#020812);
+}
+.panel{
+  width:min(720px,94vw);
+  border:1px solid rgba(89,233,255,.30);
+  border-radius:24px;
+  padding:clamp(24px,4vw,42px);
+  background:linear-gradient(145deg,rgba(6,24,39,.97),rgba(3,13,23,.98));
+  box-shadow:0 24px 80px rgba(0,0,0,.32),inset 0 0 30px rgba(89,233,255,.035);
+  text-align:center;
+}
+.kicker{
+  color:var(--cyan);font-size:clamp(10px,1vw,14px);
+  letter-spacing:.22em;text-transform:uppercase;font-weight:900
+}
+h1{
+  margin:.3em 0 .18em;font-size:clamp(35px,5vw,62px);
+  line-height:1;letter-spacing:-.03em
+}
+.state{
+  color:var(--red);font-weight:900;letter-spacing:.13em;
+  text-transform:uppercase;font-size:clamp(12px,1.2vw,17px);margin-bottom:24px
+}
+.message{
+  min-height:52px;color:#d4eaf2;font-size:clamp(14px,1.3vw,19px);
+  line-height:1.45;margin-bottom:20px
+}
+.progress{
+  color:var(--muted);font-size:12px;letter-spacing:.1em;
+  text-transform:uppercase;margin-bottom:15px
+}
+input{
+  width:min(370px,90%);text-align:center;
+  padding:15px 18px;border-radius:14px;
+  border:1px solid rgba(89,233,255,.34);
+  background:#020d17;color:#fff;outline:none;
+  font-size:clamp(25px,3vw,40px);font-weight:900;
+  letter-spacing:.22em;
+}
+input:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(89,233,255,.08)}
+input:disabled{opacity:.3;cursor:not-allowed}
+button{
+  display:block;width:min(370px,90%);margin:12px auto 0;
+  padding:14px;border-radius:13px;border:1px solid rgba(89,233,255,.45);
+  background:linear-gradient(180deg,#a6f5ff,#54deef);
+  color:#031016;font-weight:900;letter-spacing:.12em;text-transform:uppercase;
+  cursor:pointer
+}
+button:disabled{
+  cursor:not-allowed;background:#102837;color:#55717e;border-color:#234451
+}
+.feedback{min-height:22px;margin-top:16px;font-size:14px;font-weight:800}
+.bad{color:#ff98a5}.good{color:var(--green)}
+.session{margin-top:22px;color:#6e8d9d;font-size:11px;letter-spacing:.1em;text-transform:uppercase}
+
+/* SUCCESS SCREEN — same HTML page */
+.success{
+  position:fixed;inset:0;display:none;place-items:center;padding:24px;
+  background:
+    radial-gradient(circle at 50% 40%,rgba(76,240,164,.18),transparent 32%),
+    linear-gradient(145deg,#02100d,#05271f 58%,#020b0a);
+  z-index:10;text-align:center
+}
+.success.show{display:grid}
+.success-box{max-width:900px}
+.check{
+  width:90px;height:90px;margin:0 auto 20px;border-radius:50%;
+  border:2px solid var(--green);display:grid;place-items:center;
+  color:var(--green);font-size:52px;font-weight:900;
+  box-shadow:0 0 30px rgba(76,240,164,.2)
+}
+.success .small{
+  color:var(--green);font-weight:900;letter-spacing:.22em;
+  text-transform:uppercase;font-size:13px
+}
+.success h2{
+  font-size:clamp(45px,7vw,90px);margin:.18em 0 .2em;
+  line-height:.95;letter-spacing:-.04em
+}
+.success p{
+  color:#d9f5ea;font-size:clamp(17px,1.6vw,24px);line-height:1.5;margin:0 auto;
+  max-width:760px
+}
+.final-line{
+  margin-top:28px!important;color:#9ccdb9!important;
+  font-size:clamp(13px,1.2vw,17px)!important
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <main class="panel">
+    <div class="kicker">Security Gate // Uscita</div>
+    <h1>TERMINALE DI ACCESSO</h1>
+    <div class="state" id="state">USCITA BLOCCATA</div>
+
+    <div class="progress" id="progress">Postazioni completate: 0 / 16</div>
+    <div class="message" id="message"></div>
+
+    <input id="password" type="text" inputmode="numeric" maxlength="4"
+           autocomplete="off" placeholder="••••" disabled>
+    <button id="verify" disabled>Verifica password</button>
+
+    <div class="feedback" id="feedback"></div>
+    <div class="session" id="session"></div>
+  </main>
+</div>
+
+<section class="success" id="success">
+  <div class="success-box">
+    <div class="check">✓</div>
+    <div class="small">Security Gate // Accesso autorizzato</div>
+    <h2>USCITA SBLOCCATA</h2>
+    <p>
+      Password verificata. Il protocollo di sicurezza è stato disattivato
+      e le porte del Museo dell'Informatica sono nuovamente aperte.
+    </p>
+    <p class="final-line">
+      Missione completata. Potete uscire dal museo.
+    </p>
+  </div>
+</section>
+
+<script>
+const passwordInput=document.getElementById("password");
+const verifyBtn=document.getElementById("verify");
+const stateEl=document.getElementById("state");
+const progressEl=document.getElementById("progress");
+const messageEl=document.getElementById("message");
+const feedbackEl=document.getElementById("feedback");
+const sessionEl=document.getElementById("session");
+const successEl=document.getElementById("success");
+
+function getSession(){
+  return {
+    classe:(localStorage.getItem("museoInfo_classe")||"").trim().toUpperCase(),
+    modalita:(localStorage.getItem("museoInfo_modalita")||"").trim().toLowerCase()
+  };
+}
+function prefix(){
+  const s=getSession();
+  return `museoInfo_${s.classe}_${s.modalita}`;
+}
+function validSession(){
+  const s=getSession();
+  return !!s.classe && ["ripasso","consolidamento"].includes(s.modalita);
+}
+function isSolved(i){
+  const nn=String(i).padStart(2,"0");
+  const keys=[
+    `${prefix()}_enigma${nn}`,
+    `${prefix()}_enigma${i}`,
+    `${prefix()}_postazione${nn}`,
+    `${prefix()}_postazione${i}`
+  ];
+  return keys.some(k=>{
+    const v=(localStorage.getItem(k)||"").toLowerCase();
+    return ["true","1","completato","completed","solved"].includes(v);
+  });
+}
+function completed(){
+  let n=0;
+  for(let i=1;i<=16;i++) if(isSolved(i)) n++;
+  return n;
+}
+function unlockedKey(){return `${prefix()}_uscita_sbloccata`}
+
+function render(){
+  if(!validSession()){
+    sessionEl.textContent="Sessione non configurata";
+    progressEl.textContent="";
+    messageEl.textContent="Configurare prima classe e modalità.";
+    passwordInput.disabled=true;
+    verifyBtn.disabled=true;
+    return;
+  }
+
+  const s=getSession();
+  sessionEl.textContent=`${s.classe} · ${s.modalita.toUpperCase()}`;
+
+  if(localStorage.getItem(unlockedKey())==="true"){
+    successEl.classList.add("show");
+    return;
+  }
+
+  const n=completed();
+  progressEl.textContent=`Postazioni completate: ${n} / 16`;
+
+  if(n<16){
+    stateEl.textContent="USCITA BLOCCATA";
+    messageEl.innerHTML=
+      "<strong>DECODIFICA NON COMPLETATA</strong><br>Il sistema non dispone ancora delle credenziali di uscita.";
+    passwordInput.disabled=true;
+    verifyBtn.disabled=true;
+    passwordInput.value="";
+  }else{
+    stateEl.textContent="CREDENZIALI DISPONIBILI";
+    messageEl.innerHTML=
+      "Il Codificatore ha completato la raccolta.<br>Inserite la password di uscita.";
+    passwordInput.disabled=false;
+    verifyBtn.disabled=false;
+  }
+}
+
+function verify(){
+  if(completed()<16) return;
+
+  const expected=localStorage.getItem(`${prefix()}_password`);
+  const entered=passwordInput.value.trim();
+
+  if(!expected){
+    feedbackEl.className="feedback bad";
+    feedbackEl.textContent="ERRORE DI SESSIONE — password non disponibile.";
+    return;
+  }
+
+  if(entered===expected){
+    feedbackEl.className="feedback good";
+    feedbackEl.textContent="ACCESSO AUTORIZZATO";
+    localStorage.setItem(unlockedKey(),"true");
+
+    /* L'uscita avviene qui, nella stessa pagina HTML. */
+    setTimeout(()=>successEl.classList.add("show"),550);
+  }else{
+    feedbackEl.className="feedback bad";
+    feedbackEl.textContent="ACCESSO NEGATO — PASSWORD NON CORRETTA";
+    passwordInput.select();
+  }
+}
+
+verifyBtn.addEventListener("click",verify);
+passwordInput.addEventListener("keydown",e=>{
+  if(e.key==="Enter") verify();
+});
+passwordInput.addEventListener("input",()=>{
+  passwordInput.value=passwordInput.value.replace(/\D/g,"").slice(0,4);
+  feedbackEl.textContent="";
+});
+
+render();
+setInterval(render,900);
+window.addEventListener("storage",render);
+window.addEventListener("focus",render);
+</script>
+</body>
+</html>
