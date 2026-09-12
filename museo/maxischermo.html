@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Maxischermo — Museo dell'Informatica</title>
+<style>
+:root{
+  --bg:#020b15; --panel:#061827; --line:#1d5b75;
+  --cyan:#55e8ff; --cyan2:#b9f8ff; --green:#4bf0a0;
+  --red:#ff6477; --text:#effcff; --muted:#9cb8c8;
+}
+*{box-sizing:border-box}
+html,body{width:100%;height:100%;margin:0;overflow:hidden}
+body{font-family:Inter,Segoe UI,Arial,sans-serif;background:#020b15;color:var(--text)}
+.screen{
+  width:100vw;height:100vh;position:relative;overflow:hidden;
+  background:
+    radial-gradient(circle at 50% 35%,rgba(31,124,208,.22),transparent 34%),
+    linear-gradient(150deg,#03101d,#061a2c 55%,#020912);
+  display:flex;align-items:center;justify-content:center;
+}
+.world{
+  position:absolute;width:68vmin;height:68vmin;border-radius:50%;
+  border:1px solid rgba(85,232,255,.12);opacity:.55;
+  box-shadow:0 0 90px rgba(54,161,255,.10),inset 0 0 70px rgba(85,232,255,.05);
+}
+.world:before,.world:after{
+  content:"";position:absolute;border-radius:50%;border:1px solid rgba(85,232,255,.10)
+}
+.world:before{inset:16% -8%;transform:rotate(20deg)}
+.world:after{inset:-8% 22%;transform:rotate(-20deg)}
+.node{position:absolute;width:7px;height:7px;border-radius:50%;background:var(--cyan);box-shadow:0 0 14px var(--cyan);opacity:.55}
+.n1{left:25%;top:29%}.n2{left:65%;top:24%}.n3{left:73%;top:59%}.n4{left:37%;top:69%}.n5{left:48%;top:42%}
+.frame{
+  position:absolute;inset:4%;border:1px solid rgba(85,232,255,.24);border-radius:22px;
+}
+.content{
+  position:relative;z-index:3;width:min(1100px,86vw);
+  text-align:center;padding:38px;
+}
+.system{
+  color:var(--cyan);font-size:clamp(11px,1vw,16px);font-weight:800;
+  letter-spacing:.25em;text-transform:uppercase;margin-bottom:14px
+}
+h1{font-size:clamp(38px,5vw,78px);line-height:.98;margin:0 0 22px;letter-spacing:-.035em}
+.story{
+  max-width:900px;margin:0 auto;color:#d8edf5;
+  font-size:clamp(17px,1.55vw,25px);line-height:1.55
+}
+.story strong{color:#fff}
+.status{
+  margin:34px auto 0;width:min(620px,90%);
+  border:1px solid rgba(85,232,255,.3);border-radius:20px;
+  background:rgba(3,15,26,.72);padding:20px 25px;
+}
+.status-label{color:var(--muted);letter-spacing:.15em;text-transform:uppercase;font-size:12px;font-weight:800}
+.counter{font-size:clamp(36px,4vw,62px);font-weight:900;color:var(--cyan2);margin:4px 0 2px}
+.bar{height:8px;background:#0b2939;border-radius:99px;overflow:hidden;margin:12px auto 7px}
+.fill{height:100%;width:0%;background:linear-gradient(90deg,#4fdff5,#4bf0a0);transition:.5s}
+.hint{font-size:clamp(12px,1vw,16px);color:var(--muted);line-height:1.4}
+.badge{
+  display:inline-block;margin-top:25px;padding:9px 15px;border-radius:999px;
+  border:1px solid rgba(85,232,255,.25);color:#bdeaf3;font-size:12px;letter-spacing:.09em;text-transform:uppercase
+}
+.error h1{color:#fff}
+.error .story{color:#ffb7c0}
+@media(max-width:650px){.content{padding:20px;width:94vw}.status{margin-top:22px}}
+</style>
+</head>
+<body>
+<div class="screen">
+  <div class="world">
+    <i class="node n1"></i><i class="node n2"></i><i class="node n3"></i><i class="node n4"></i><i class="node n5"></i>
+  </div>
+  <div class="frame"></div>
+
+  <main class="content" id="content">
+    <div class="system">Sistema centrale del museo</div>
+    <h1 id="title">CARICAMENTO MISSIONE...</h1>
+    <div class="story" id="story"></div>
+
+    <section class="status" id="status">
+      <div class="status-label">Postazioni completate</div>
+      <div class="counter"><span id="done">0</span> / 16</div>
+      <div class="bar"><div class="fill" id="fill"></div></div>
+      <div class="hint" id="hint">
+        Recuperate tutti i simboli. Il Codificatore potrà ricostruire la password soltanto quando la collezione sarà completa.
+      </div>
+    </section>
+
+    <div class="badge" id="session"></div>
+  </main>
+</div>
+
+<script>
+const classe = (localStorage.getItem("museoInfo_classe") || "").trim().toUpperCase();
+const modalita = (localStorage.getItem("museoInfo_modalita") || "").trim().toLowerCase();
+
+const title = document.getElementById("title");
+const story = document.getElementById("story");
+const session = document.getElementById("session");
+const status = document.getElementById("status");
+const content = document.getElementById("content");
+
+function prefix(){
+  return `museoInfo_${classe}_${modalita}`;
+}
+
+function completedCount(){
+  if(!classe || !modalita) return 0;
+
+  let total = 0;
+
+  // Il maxischermo riconosce come completato un enigma se una delle
+  // convenzioni sotto è impostata a "true", "1" o "completato".
+  // Questo ci permette di mantenere flessibile la costruzione delle
+  // future 16 pagine senza cambiare il maxischermo.
+  for(let i=1;i<=16;i++){
+    const nn = String(i).padStart(2,"0");
+    const candidates = [
+      `${prefix()}_enigma${nn}`,
+      `${prefix()}_enigma${i}`,
+      `${prefix()}_postazione${nn}`,
+      `${prefix()}_postazione${i}`
+    ];
+    const solved = candidates.some(k => {
+      const v = (localStorage.getItem(k) || "").toLowerCase();
+      return ["true","1","completato","completed","solved"].includes(v);
+    });
+    if(solved) total++;
+  }
+  return total;
+}
+
+function updateProgress(){
+  const n = completedCount();
+  document.getElementById("done").textContent = n;
+  document.getElementById("fill").style.width = `${(n/16)*100}%`;
+
+  if(n === 16){
+    document.getElementById("hint").innerHTML =
+      "<strong>COLLEZIONE COMPLETA.</strong> Il Codificatore è pronto.";
+  }
+}
+
+function renderMission(){
+  if(!classe || !["ripasso","consolidamento"].includes(modalita)){
+    content.classList.add("error");
+    title.textContent = "CONFIGURAZIONE NON RILEVATA";
+    story.innerHTML =
+      "Prima di iniziare la visita è necessario configurare <strong>classe</strong> e <strong>modalità</strong>.";
+    status.style.display = "none";
+    session.textContent = "Sessione non configurata";
+    return;
+  }
+
+  session.textContent = `${classe} · ${modalita.toUpperCase()}`;
+
+  if(modalita === "ripasso"){
+    title.textContent = "VISITA INTERROTTA";
+    story.innerHTML = `
+      La Prof ha rilevato un piccolo problema.<br>
+      Sembra che abbiate dimenticato <strong>un po' troppe cose</strong>
+      di quello che avete studiato lo scorso anno.<br><br>
+      L'uscita del museo è stata bloccata.<br>
+      Esplorate le sale, consultate liberamente le esposizioni e risolvete
+      le <strong>16 postazioni interattive</strong>.<br>
+      Ogni postazione completata vi permetterà di recuperare un simbolo.
+    `;
+  } else {
+    title.textContent = "SFIDA FINALE ATTIVATA";
+    story.innerHTML = `
+      Avete completato il vostro percorso nell'informatica di base.
+      Il museo ha preparato per voi una <strong>sfida finale</strong>.<br><br>
+      Esplorate liberamente le sale, consultate le esposizioni quando ne avete bisogno
+      e affrontate le <strong>16 postazioni interattive</strong>.<br>
+      Ogni postazione completata vi permetterà di recuperare un simbolo.
+    `;
+  }
+
+  updateProgress();
+}
+
+renderMission();
+
+// Aggiorna il contatore anche se il maxischermo resta aperto.
+setInterval(updateProgress,1000);
+
+// Utile se la pagina viene riattivata dopo essere tornati da un'altra scheda.
+window.addEventListener("focus",updateProgress);
+window.addEventListener("storage",updateProgress);
+</script>
+</body>
+</html>
