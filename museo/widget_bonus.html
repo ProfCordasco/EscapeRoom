@@ -80,14 +80,23 @@ body{
   flex:0 0 auto;
 }
 .dot{
-  width:clamp(7px,2.2vw,11px);
+  appearance:none;
+  -webkit-appearance:none;
+  padding:0;
+  margin:0;
+  cursor:pointer;
+  width:clamp(10px,2.5vw,14px);
   height:clamp(7px,2.2vw,11px);
   border-radius:50%;
   border:1px solid rgba(91,232,255,.45);
   background:var(--cyan);
   box-shadow:0 0 7px rgba(91,232,255,.5);
 }
+.dot:hover:not(.spent){
+  transform:scale(1.12);
+}
 .dot.spent{
+  cursor:default;
   background:var(--off);
   border-color:rgba(255,255,255,.12);
   box-shadow:none;
@@ -158,8 +167,24 @@ function render(){
     dots.className="dots";
 
     for(let s=1;s<=2;s++){
-      const d=document.createElement("span");
-      d.className="dot"+(bonusSpent(g,s)?" spent":"");
+      const d=document.createElement("button");
+      const spent = bonusSpent(g,s);
+      d.className="dot"+(spent?" spent":"");
+      d.type="button";
+      d.disabled=spent;
+      d.title=spent ? "Bonus già utilizzato" : `Usa bonus Gruppo ${g}`;
+      d.setAttribute("aria-label", d.title);
+
+      d.addEventListener("click",()=>{
+        if(bonusSpent(g,s)) return;
+
+        const ok=confirm(`Usare un bonus del GRUPPO ${g}?`);
+        if(!ok) return;
+
+        localStorage.setItem(`${prefix()}_bonus_g${g}_${s}`,"spent");
+        render();
+      });
+
       dots.appendChild(d);
     }
 
