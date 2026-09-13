@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Enigma Binario — Museo dell'Informatica</title>
+<title>Enigma 01 — Binario → Decimale</title>
 
 <style>
 :root{
@@ -31,9 +31,7 @@ html,body{
     radial-gradient(circle at 50% 0%, #17394a 0%, #081923 44%, #030a0f 100%);
 }
 
-body{
-  padding:16px;
-}
+body{padding:16px}
 
 .console{
   width:min(1180px,100%);
@@ -133,9 +131,21 @@ h1{
   white-space:nowrap;
 }
 
-main{
-  padding:20px 24px 26px;
+main{padding:20px 24px 26px}
+
+.warning{
+  display:none;
+  margin-bottom:16px;
+  padding:12px 14px;
+  border:1px solid #8b6c2d;
+  border-radius:10px;
+  background:#2d2411;
+  color:#ffe5a1;
+  font-size:12px;
+  line-height:1.45;
 }
+
+.warning.show{display:block}
 
 .top-row{
   display:grid;
@@ -153,9 +163,7 @@ main{
   line-height:1.5;
 }
 
-.instructions strong{
-  color:white;
-}
+.instructions strong{color:white}
 
 .counter{
   min-width:148px;
@@ -256,97 +264,129 @@ main{
   letter-spacing:.13em;
 }
 
-.module.success .module-state{
-  color:var(--green);
-}
+.module.success .module-state{color:var(--green)}
 
-.labels,
-.bit-row{
+.power-row,
+.bit-row,
+.input-row{
   display:grid;
   grid-template-columns:repeat(5,1fr);
   gap:7px;
 }
 
-.labels{
-  margin-bottom:6px;
+.power-row{
+  min-height:22px;
+  margin-bottom:5px;
 }
 
-.labels div{
-  min-height:16px;
-  text-align:center;
+.power{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:20px;
   color:#8fd4e3;
   font:700 12px "Courier New",monospace;
 }
 
-.bit-cell{
-  height:58px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+.bit{
+  height:56px;
+  display:grid;
+  place-items:center;
   border:1px solid #397084;
   border-radius:8px;
   background:#071820;
-  color:#effcff;
-  font:900 28px "Courier New",monospace;
-  cursor:pointer;
-  user-select:none;
-  transition:.12s;
+  color:#f4fdff;
+  font:900 29px "Courier New",monospace;
 }
 
-.bit-cell:hover{
-  border-color:#62d8ef;
-  background:#0b2732;
+.bit.one{
+  border-color:#65bdd2;
+  background:#0d2d39;
+  box-shadow:inset 0 0 16px #54dff321;
 }
 
-.bit-cell.on{
-  border-color:#7cecff;
-  background:#113b47;
-  box-shadow:
-    inset 0 0 18px #4ee8ff30,
-    0 0 10px #44def333;
-}
+.input-row{margin-top:8px}
 
-.addends{
-  min-height:31px;
-  margin:11px 0 10px;
-  padding:7px 9px;
-  border:1px solid #1c4555;
-  border-radius:7px;
-  background:#06151c;
-  color:#c8f4fd;
-  font:700 13px "Courier New",monospace;
-}
-
-.target-row{
-  display:grid;
-  grid-template-columns:1fr auto;
-  gap:9px;
-}
-
-.target-box{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  padding:9px 11px;
-  border:1px solid #386477;
+.weight-input{
+  width:100%;
+  height:48px;
+  border:1px solid #376779;
   border-radius:8px;
-  background:#07161e;
+  background:#06161d;
+  color:#fff4bd;
+  text-align:center;
+  font:900 20px "Courier New",monospace;
+  outline:none;
 }
 
-.target-box small{
-  color:#82aab7;
+.weight-input:focus{
+  border-color:#7de8fa;
+  box-shadow:0 0 0 2px #5be4ff20;
+}
+
+.weight-input:disabled{
+  opacity:.72;
+  color:#b8e9c9;
+}
+
+.input-caption{
+  margin-top:7px;
+  color:#769ba7;
+  font-size:9px;
+  letter-spacing:.11em;
+  text-align:center;
+}
+
+.sum-box{
+  margin-top:12px;
+  padding:10px 12px;
+  border:1px solid #1e4c5d;
+  border-radius:8px;
+  background:#06151c;
+}
+
+.sum-label{
+  display:block;
+  color:#7198a5;
   font-size:9px;
   font-weight:900;
   letter-spacing:.13em;
+  margin-bottom:5px;
 }
 
-.target-value{
-  color:#fff2b8;
-  font:900 25px "Courier New",monospace;
+.sum-expression{
+  min-height:24px;
+  color:#d8f8ff;
+  font:700 14px "Courier New",monospace;
+  word-break:break-word;
 }
+
+.sum-result{
+  margin-top:6px;
+  color:#fff0a6;
+  font:900 22px "Courier New",monospace;
+}
+
+.action-row{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:10px;
+  align-items:center;
+  margin-top:11px;
+}
+
+.feedback{
+  min-height:22px;
+  color:#8fb2bd;
+  font-size:11px;
+  line-height:1.4;
+}
+
+.feedback.bad{color:#ff9eaa}
+.feedback.good{color:#8effbf}
 
 button{
+  min-height:44px;
   border:1px solid #3c829b;
   border-radius:8px;
   background:linear-gradient(#16475b,#0e3241);
@@ -357,24 +397,8 @@ button{
   cursor:pointer;
 }
 
-button:hover{
-  filter:brightness(1.12);
-}
-
-button:disabled{
-  opacity:.4;
-  cursor:not-allowed;
-}
-
-.feedback{
-  min-height:20px;
-  margin-top:8px;
-  color:#8fb2bd;
-  font-size:11px;
-}
-
-.feedback.bad{color:#ff9eaa}
-.feedback.good{color:#8effbf}
+button:hover{filter:brightness(1.12)}
+button:disabled{opacity:.4;cursor:not-allowed}
 
 .help{
   margin-top:18px;
@@ -386,20 +410,6 @@ button:disabled{
 }
 
 .help b{color:#daf9ff}
-
-.warning{
-  display:none;
-  margin-bottom:16px;
-  padding:12px 14px;
-  border:1px solid #8b6c2d;
-  border-radius:10px;
-  background:#2d2411;
-  color:#ffe5a1;
-  font-size:12px;
-  line-height:1.45;
-}
-
-.warning.show{display:block}
 
 .overlay{
   position:fixed;
@@ -457,9 +467,7 @@ button:disabled{
   line-height:1.5;
 }
 
-.reward button{
-  padding:11px 17px;
-}
+.reward button{padding:11px 17px}
 
 @media(max-width:780px){
   header,
@@ -468,21 +476,10 @@ button:disabled{
     grid-template-columns:1fr;
   }
 
-  .badge{
-    justify-self:start;
-  }
-
-  .counter{
-    width:170px;
-  }
-
-  .modules{
-    grid-template-columns:1fr;
-  }
-
-  main{
-    padding:16px;
-  }
+  .badge{justify-self:start}
+  .counter{width:170px}
+  .modules{grid-template-columns:1fr}
+  main{padding:16px}
 }
 </style>
 </head>
@@ -494,12 +491,12 @@ button:disabled{
   <header>
     <div>
       <div class="eyebrow">MUSEO DELL'INFORMATICA · GALLERIA DELL'INFORMAZIONE</div>
-      <h1>UNITÀ DI DECODIFICA BINARIA</h1>
-      <div class="subtitle">Sistema storico di conversione numerica — modulo di servizio</div>
+      <h1>UNITÀ DI LETTURA BINARIA</h1>
+      <div class="subtitle">Conversione da sistema binario a sistema decimale</div>
     </div>
 
     <div class="badge">
-      <small>STAZIONE 01</small>
+      <small>ENIGMA 01</small>
       GRUPPO 1
     </div>
   </header>
@@ -507,7 +504,7 @@ button:disabled{
   <div class="statusbar">
     <div class="machine-status">
       <span class="lamp" id="mainLamp"></span>
-      <strong id="machineStatus">ERRORE DI LETTURA — 4 MODULI DA RIPRISTINARE</strong>
+      <strong id="machineStatus">4 SEQUENZE DA DECODIFICARE</strong>
     </div>
 
     <div class="tag" id="modeTag">MODALITÀ: —</div>
@@ -517,17 +514,16 @@ button:disabled{
   <main>
 
     <div class="warning" id="configWarning">
-      Configurazione del museo non rilevata. L'enigma è comunque utilizzabile,
-      ma il completamento non potrà essere registrato nel Codificatore finché
-      non viene impostata classe e modalità dalla pagina di configurazione.
+      Configurazione del museo non rilevata. L'enigma è utilizzabile, ma il completamento
+      non potrà essere registrato nel Codificatore finché classe e modalità non saranno impostate.
     </div>
 
     <div class="top-row">
       <div class="instructions" id="instructions"></div>
 
       <div class="counter">
-        <span>CICLI MACCHINA</span>
-        <b>2847</b>
+        <span>LETTURE ARCHIVIATE</span>
+        <b>0417</b>
       </div>
     </div>
 
@@ -547,8 +543,8 @@ button:disabled{
 
 <div class="overlay" id="completionOverlay">
   <div class="reward">
-    <div class="mini">DECODIFICA RIPRISTINATA</div>
-    <h2>Stazione completata</h2>
+    <div class="mini">DECODIFICA COMPLETATA</div>
+    <h2>Enigma risolto</h2>
     <div class="relic">◈</div>
     <p>
       Il reperto è stato registrato automaticamente nel <b>Codificatore</b>.<br>
@@ -564,7 +560,7 @@ button:disabled{
   "use strict";
 
   /* ============================================================
-     1. STORAGE
+     STORAGE CONDIVISO CON IL MUSEO
      ============================================================ */
 
   function getStorage(key){
@@ -584,16 +580,15 @@ button:disabled{
     }
   }
 
-  /* ============================================================
-     2. CONFIGURAZIONE DEL MUSEO
-     Usa ESATTAMENTE le chiavi condivise con:
-     configurazione.html
-     codificatore.html
-     maxischermo.html
-     ============================================================ */
+  const classe =
+    (getStorage("museoInfo_classe") || "")
+      .trim()
+      .toUpperCase();
 
-  const classe = (getStorage("museoInfo_classe") || "").trim().toUpperCase();
-  const modalita = (getStorage("museoInfo_modalita") || "").trim().toLowerCase();
+  const modalita =
+    (getStorage("museoInfo_modalita") || "")
+      .trim()
+      .toLowerCase();
 
   const configurazioneValida =
     classe !== "" &&
@@ -616,22 +611,18 @@ button:disabled{
     document.getElementById("configWarning").classList.add("show");
   }
 
-  /* ============================================================
-     3. CHIAVE DI COMPLETAMENTO
-     Questa è la chiave che Codificatore e Maxischermo devono leggere.
-     Esempio:
-     museoInfo_2A_ripasso_enigma01
-     ============================================================ */
+  /*
+    CHIAVE CANONICA DEL COMPLETAMENTO:
+    museoInfo_<CLASSE>_<modalita>_enigma01
 
-  function chiaveEnigma(){
-    if(!configurazioneValida){
-      return null;
-    }
+    Esempio:
+    museoInfo_2A_ripasso_enigma01
+  */
 
-    return "museoInfo_" + classe + "_" + modalita + "_enigma01";
-  }
-
-  const completionKey = chiaveEnigma();
+  const completionKey =
+    configurazioneValida
+      ? "museoInfo_" + classe + "_" + modalita + "_enigma01"
+      : null;
 
   function valoreCompletato(value){
     const v = String(value || "").trim().toLowerCase();
@@ -646,31 +637,26 @@ button:disabled{
   }
 
   function enigmaGiaCompletato(){
-    if(!completionKey){
-      return false;
-    }
-
-    return valoreCompletato(getStorage(completionKey));
+    return completionKey
+      ? valoreCompletato(getStorage(completionKey))
+      : false;
   }
 
   /* ============================================================
-     4. CONTENUTO DELL'ENIGMA
+     DATI DELL'ENIGMA
      ============================================================ */
 
-  const numeriDaRaggiungere = [5,11,18,21];
-
   const pesi = [16,8,4,2,1];
-
   const potenze = ["2⁴","2³","2²","2¹","2⁰"];
 
-  const risolti = [false,false,false,false];
-
-  const selezioni = [
-    new Set(),
-    new Set(),
-    new Set(),
-    new Set()
+  const sequenze = [
+    [1,0,1,1,0],   // 22
+    [0,1,1,0,1],   // 13
+    [1,1,0,0,1],   // 25
+    [1,0,0,1,1]    // 19
   ];
+
+  const risolti = [false,false,false,false];
 
   const instructions = document.getElementById("instructions");
   const helpText = document.getElementById("helpText");
@@ -678,95 +664,109 @@ button:disabled{
   if(modalita === "ripasso"){
 
     instructions.innerHTML =
-      "La macchina deve ricostruire quattro numeri decimali. " +
-      "<strong>Attiva le posizioni necessarie</strong>: quando una posizione viene attivata compare un <b>1</b>. " +
-      "Ricostruisci il valore delle potenze di 2 e usa gli addendi visualizzati per eseguire tu il calcolo. " +
-      "Se non ricordi il procedimento, puoi consultare l'<strong>Archivio Tecnico</strong>.";
+      "Ogni riga rappresenta un numero binario. " +
+      "<strong>Scrivi nelle caselle soltanto i pesi che devono contribuire alla conversione.</strong> " +
+      "La macchina sommerà automaticamente tutti i valori inseriti, anche quelli collocati sotto uno 0. " +
+      "Quando ritieni corretta la conversione, premi <strong>VERIFICA</strong>.";
 
     helpText.innerHTML =
-      "<b>RIPASSO:</b> sono mostrate soltanto le potenze di 2. " +
-      "Devi ricordare — o recuperare dall'Archivio Tecnico — quanto vale ogni posizione.";
+      "<b>RIPASSO:</b> i pesi delle posizioni non sono indicati. " +
+      "Se non li ricordi, puoi recuperarli nell'Archivio Tecnico.";
 
   }else{
 
     instructions.innerHTML =
-      "La macchina deve ricostruire quattro numeri decimali. " +
-      "<strong>Attiva le posizioni necessarie</strong>: quando una posizione viene attivata compare un <b>1</b>. " +
-      "Sotto vengono mostrati soltanto gli addendi selezionati: il risultato devi calcolarlo tu. " +
-      "Quando pensi di aver raggiunto il numero richiesto, premi <strong>VERIFICA</strong>.";
+      "Ogni riga rappresenta un numero binario. " +
+      "<strong>Scrivi nelle caselle soltanto i pesi corrispondenti ai bit uguali a 1.</strong> " +
+      "La macchina sommerà automaticamente tutti i valori inseriti: se inserisci un peso sotto uno 0, " +
+      "anche quel valore entrerà nella somma. Poi premi <strong>VERIFICA</strong>.";
 
     helpText.innerHTML =
-      "<b>CONSOLIDAMENTO:</b> i valori delle cinque posizioni sono già visibili.";
+      "<b>CONSOLIDAMENTO:</b> sopra ogni posizione è indicata la relativa potenza di 2. " +
+      "Ricava da essa il peso numerico da inserire.";
   }
 
   /* ============================================================
-     5. CREAZIONE DEI 4 MODULI
+     CREAZIONE DEI MODULI
      ============================================================ */
 
   const modulesContainer = document.getElementById("modules");
 
   function creaModuli(){
 
-    modulesContainer.innerHTML = "";
-
-    numeriDaRaggiungere.forEach(function(numero,index){
-
-      const labels =
-        modalita === "ripasso"
-          ? potenze
-          : pesi;
+    sequenze.forEach(function(bits,index){
 
       const module = document.createElement("article");
-
       module.className = "module";
       module.id = "module" + index;
 
-      let labelsHTML = "";
+      let powersHTML = "";
 
-      labels.forEach(function(label){
-        labelsHTML += "<div>" + label + "</div>";
+      potenze.forEach(function(power){
+        powersHTML +=
+          '<div class="power">' +
+          (modalita === "consolidamento" ? power : "") +
+          '</div>';
       });
 
-      let cellsHTML = "";
+      let bitsHTML = "";
 
-      pesi.forEach(function(peso,posizione){
-        cellsHTML +=
-          '<div class="bit-cell" ' +
+      bits.forEach(function(bit){
+        bitsHTML +=
+          '<div class="bit ' + (bit === 1 ? "one" : "") + '">' +
+          bit +
+          '</div>';
+      });
+
+      let inputsHTML = "";
+
+      bits.forEach(function(bit,posizione){
+        inputsHTML +=
+          '<input ' +
+          'class="weight-input" ' +
+          'id="input_' + index + '_' + posizione + '" ' +
           'data-module="' + index + '" ' +
           'data-position="' + posizione + '" ' +
-          'role="button" tabindex="0" ' +
-          'aria-label="Posizione binaria ' + (posizione + 1) + '">' +
-          '</div>';
+          'type="number" ' +
+          'inputmode="numeric" ' +
+          'step="1" ' +
+          'min="0" ' +
+          'max="99" ' +
+          'aria-label="Peso della posizione ' + (posizione + 1) + '">';
       });
 
       module.innerHTML =
         '<div class="module-head">' +
-          '<div class="module-title">MODULO ' +
+          '<div class="module-title">SEQUENZA ' +
             String(index + 1).padStart(2,"0") +
           '</div>' +
           '<div class="module-state" id="state' + index + '">IN ATTESA</div>' +
         '</div>' +
 
-        '<div class="labels">' +
-          labelsHTML +
+        '<div class="power-row">' +
+          powersHTML +
         '</div>' +
 
         '<div class="bit-row">' +
-          cellsHTML +
+          bitsHTML +
         '</div>' +
 
-        '<div class="addends" id="addends' + index + '">ADDENDI: —</div>' +
+        '<div class="input-row">' +
+          inputsHTML +
+        '</div>' +
 
-        '<div class="target-row">' +
-          '<div class="target-box">' +
-            '<small>NUMERO DECIMALE DA RAGGIUNGERE</small>' +
-            '<div class="target-value">' + numero + '</div>' +
-          '</div>' +
+        '<div class="input-caption">PESI INSERITI</div>' +
 
+        '<div class="sum-box">' +
+          '<span class="sum-label">SOMMA AUTOMATICA</span>' +
+          '<div class="sum-expression" id="expression' + index + '">—</div>' +
+          '<div class="sum-result" id="sum' + index + '">= 0</div>' +
+        '</div>' +
+
+        '<div class="action-row">' +
+          '<div class="feedback" id="feedback' + index + '"></div>' +
           '<button type="button" id="check' + index + '">VERIFICA</button>' +
-        '</div>' +
-
-        '<div class="feedback" id="feedback' + index + '"></div>';
+        '</div>';
 
       modulesContainer.appendChild(module);
     });
@@ -775,96 +775,114 @@ button:disabled{
   creaModuli();
 
   /* ============================================================
-     6. GESTIONE DELLE POSIZIONI BINARIE
+     SOMMA AUTOMATICA
+     Tutto ciò che viene scritto viene contato, anche sotto gli 0.
      ============================================================ */
 
-  function valoriSelezionati(index){
+  function leggiValori(index){
 
-    return Array
-      .from(selezioni[index])
-      .sort(function(a,b){
-        return a-b;
-      })
-      .map(function(posizione){
-        return pesi[posizione];
+    const valori = [];
+
+    for(let posizione = 0; posizione < 5; posizione++){
+
+      const input =
+        document.getElementById("input_" + index + "_" + posizione);
+
+      const testo = input.value.trim();
+
+      if(testo === ""){
+        valori.push(null);
+        continue;
+      }
+
+      const numero = Number(testo);
+
+      if(!Number.isFinite(numero)){
+        valori.push(null);
+        continue;
+      }
+
+      valori.push(numero);
+    }
+
+    return valori;
+  }
+
+  function aggiornaSomma(index){
+
+    const valori = leggiValori(index);
+
+    const presenti =
+      valori.filter(function(v){
+        return v !== null;
       });
+
+    const totale =
+      presenti.reduce(function(acc,v){
+        return acc + v;
+      },0);
+
+    document.getElementById("expression" + index).textContent =
+      presenti.length
+        ? presenti.join(" + ")
+        : "—";
+
+    document.getElementById("sum" + index).textContent =
+      "= " + totale;
+
+    return totale;
   }
 
-  function totaleSelezionato(index){
+  document.querySelectorAll(".weight-input").forEach(function(input){
 
-    return valoriSelezionati(index).reduce(function(totale,valore){
-      return totale + valore;
-    },0);
-  }
+    input.addEventListener("input",function(){
 
-  function aggiornaAddendi(index){
+      const index = Number(input.dataset.module);
 
-    const valori = valoriSelezionati(index);
-    const box = document.getElementById("addends" + index);
+      if(risolti[index]){
+        return;
+      }
 
-    if(valori.length === 0){
-      box.textContent = "ADDENDI: —";
-      return;
-    }
+      aggiornaSomma(index);
 
-    box.textContent = "ADDENDI: " + valori.join(" + ");
-  }
+      const module = document.getElementById("module" + index);
+      module.classList.remove("error");
 
-  function cambiaPosizione(cell){
-
-    const index = Number(cell.dataset.module);
-    const posizione = Number(cell.dataset.position);
-
-    if(risolti[index]){
-      return;
-    }
-
-    if(selezioni[index].has(posizione)){
-
-      selezioni[index].delete(posizione);
-
-      cell.classList.remove("on");
-      cell.textContent = "";
-
-    }else{
-
-      selezioni[index].add(posizione);
-
-      cell.classList.add("on");
-      cell.textContent = "1";
-    }
-
-    aggiornaAddendi(index);
-  }
-
-  modulesContainer.addEventListener("click",function(event){
-
-    const cell = event.target.closest(".bit-cell");
-
-    if(!cell){
-      return;
-    }
-
-    cambiaPosizione(cell);
-  });
-
-  modulesContainer.addEventListener("keydown",function(event){
-
-    const cell = event.target.closest(".bit-cell");
-
-    if(!cell){
-      return;
-    }
-
-    if(event.key === "Enter" || event.key === " "){
-      event.preventDefault();
-      cambiaPosizione(cell);
-    }
+      const feedback = document.getElementById("feedback" + index);
+      feedback.textContent = "";
+      feedback.className = "feedback";
+    });
   });
 
   /* ============================================================
-     7. VERIFICA
+     VERIFICA
+     Devono essere presenti ESATTAMENTE i pesi associati ai bit 1.
+     Sotto i bit 0 la casella deve rimanere vuota.
      ============================================================ */
+
+  function configurazioneCorretta(index){
+
+    const bits = sequenze[index];
+    const valori = leggiValori(index);
+
+    for(let posizione = 0; posizione < 5; posizione++){
+
+      if(bits[posizione] === 1){
+
+        if(valori[posizione] !== pesi[posizione]){
+          return false;
+        }
+
+      }else{
+
+        if(valori[posizione] !== null){
+          return false;
+        }
+      }
+    }
+
+    return true;
+  }
 
   function verifica(index){
 
@@ -877,29 +895,33 @@ button:disabled{
 
     module.classList.remove("error");
     feedback.className = "feedback";
-    feedback.textContent = "";
 
-    if(selezioni[index].size === 0){
+    const valori = leggiValori(index);
+
+    const almenoUno =
+      valori.some(function(v){
+        return v !== null;
+      });
+
+    if(!almenoUno){
 
       feedback.textContent =
-        "Nessuna posizione è stata attivata.";
+        "Nessun peso inserito.";
 
       feedback.classList.add("bad");
       module.classList.add("error");
-
       return;
     }
 
-    const totale = totaleSelezionato(index);
+    aggiornaSomma(index);
 
-    if(totale !== numeriDaRaggiungere[index]){
+    if(!configurazioneCorretta(index)){
 
       feedback.textContent =
-        "Il valore ottenuto non corrisponde al numero richiesto. Rivedi le posizioni attive.";
+        "Conversione non corretta. Controllate quali posizioni devono contribuire alla somma.";
 
       feedback.classList.add("bad");
       module.classList.add("error");
-
       return;
     }
 
@@ -908,7 +930,7 @@ button:disabled{
     module.classList.add("success");
 
     document.getElementById("state" + index).textContent =
-      "RIPRISTINATO";
+      "DECODIFICATA";
 
     document.getElementById("progress" + index).classList.add("on");
 
@@ -916,9 +938,15 @@ button:disabled{
       true;
 
     feedback.textContent =
-      "Modulo riattivato.";
+      "Sequenza convertita correttamente.";
 
     feedback.classList.add("good");
+
+    for(let posizione = 0; posizione < 5; posizione++){
+      document
+        .getElementById("input_" + index + "_" + posizione)
+        .disabled = true;
+    }
 
     if(risolti.every(function(stato){
       return stato === true;
@@ -927,7 +955,7 @@ button:disabled{
     }
   }
 
-  numeriDaRaggiungere.forEach(function(numero,index){
+  sequenze.forEach(function(bits,index){
 
     document
       .getElementById("check" + index)
@@ -937,7 +965,7 @@ button:disabled{
   });
 
   /* ============================================================
-     8. COMPLETAMENTO
+     COMPLETAMENTO E LOCALSTORAGE
      ============================================================ */
 
   function completaEnigma(){
@@ -949,23 +977,14 @@ button:disabled{
     lamp.style.boxShadow = "0 0 14px var(--green)";
 
     machineStatus.textContent =
-      "SISTEMA OPERATIVO — DECODIFICA RIPRISTINATA";
+      "UNITÀ OPERATIVA — 4 SEQUENZE DECODIFICATE";
 
     if(configurazioneValida && completionKey){
 
       /*
-        IMPORTANTE:
-        Questa è l'unica chiave necessaria per lo stato dell'enigma.
-        Esempio:
-        museoInfo_2A_ripasso_enigma01 = true
+        Valore atteso da codificatore.html e maxischermo.html
       */
-
       setStorage(completionKey,"true");
-
-      /*
-        Invio anche un evento storage-like interno alla pagina.
-        Non sostituisce localStorage: serve solo come segnale aggiuntivo.
-      */
 
       try{
         window.dispatchEvent(
@@ -977,7 +996,8 @@ button:disabled{
                 gruppo:1,
                 classe:classe,
                 modalita:modalita,
-                chiave:completionKey
+                chiave:completionKey,
+                reperto:"◈"
               }
             }
           )
@@ -985,7 +1005,6 @@ button:disabled{
       }catch(error){
         /* nessuna azione */
       }
-
     }
 
     document
@@ -994,7 +1013,7 @@ button:disabled{
   }
 
   /* ============================================================
-     9. STATO GIÀ COMPLETATO
+     STATO GIÀ REGISTRATO
      ============================================================ */
 
   if(enigmaGiaCompletato()){
@@ -1006,11 +1025,11 @@ button:disabled{
       "0 0 14px var(--green)";
 
     document.getElementById("machineStatus").textContent =
-      "SISTEMA OPERATIVO — STAZIONE GIÀ COMPLETATA";
+      "UNITÀ OPERATIVA — ENIGMA GIÀ REGISTRATO";
   }
 
   /* ============================================================
-     10. CHIUSURA DEL MESSAGGIO FINALE
+     CHIUSURA OVERLAY
      ============================================================ */
 
   document
