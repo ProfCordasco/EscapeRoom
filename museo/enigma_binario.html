@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Stazione 01 — Sistema binario</title>
+<style>
+:root{
+  --bg:#06121a;--panel:#0c2531;--panel2:#081a23;--line:#2b6073;
+  --cyan:#72e8ff;--green:#6cf2ad;--red:#ff6775;--text:#eafaff;
+  --muted:#8fb5c1;--yellow:#ffd66b;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:Inter,Segoe UI,Arial,sans-serif;background:#041018;color:var(--text)}
+body{padding:16px;background:radial-gradient(circle at 50% 0,#17394a 0,#071923 45%,#030a0f 100%)}
+.shell{max-width:1180px;margin:auto;border:1px solid #285468;border-radius:18px;overflow:hidden;background:#081923;box-shadow:0 24px 70px #0009}
+header{display:grid;grid-template-columns:1fr auto;gap:18px;align-items:center;padding:20px 24px;background:linear-gradient(#173b4c,#102a36);border-bottom:1px solid #2b5c70}
+.eyebrow{font-size:11px;letter-spacing:.17em;font-weight:900;color:var(--cyan);margin-bottom:7px}
+h1{margin:0;font-size:clamp(24px,3vw,38px);letter-spacing:.03em}
+.sub{margin-top:6px;color:var(--muted);font-size:13px}
+.badge{border:1px solid #3e829a;background:#0a202b;border-radius:11px;padding:11px 15px;text-align:center;font-weight:900;letter-spacing:.08em}
+.badge small{display:block;color:#76bfd0;font-size:9px;letter-spacing:.17em;margin-bottom:4px}
+.statusbar{padding:11px 24px;display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;background:#06151d;border-bottom:1px solid #1c4251;font-size:12px}
+.status{display:flex;align-items:center;gap:9px;color:#c4dce4}
+.lamp{width:10px;height:10px;border-radius:50%;background:var(--red);box-shadow:0 0 12px var(--red)}
+.tag{border:1px solid #285a6d;background:#0b2330;border-radius:7px;padding:7px 9px;color:#b9f4ff;font-size:10px;font-weight:900;letter-spacing:.07em}
+main{padding:20px 24px 25px}
+.top{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:start}
+.instructions{border:1px solid #28576a;border-radius:13px;background:#0a202a;padding:15px 17px;color:#c8dfe6;line-height:1.5}
+.instructions strong{color:white}
+.counter{border:1px solid #3b4c54;background:linear-gradient(#202b30,#11181c);border-radius:9px;padding:10px 12px;min-width:148px}
+.counter span{display:block;color:#91a0a7;font-size:9px;letter-spacing:.15em;margin-bottom:5px}
+.counter b{display:block;background:#080d0a;border:1px solid #334139;border-radius:4px;padding:5px 8px;font-family:monospace;font-size:24px;letter-spacing:.12em;color:#dbefc8}
+.progress{display:flex;justify-content:center;gap:18px;margin:20px 0}
+.dot{width:20px;height:20px;border:2px solid #375d6e;background:#122730;border-radius:50%;box-shadow:inset 0 0 8px #000}
+.dot.on{border-color:#a6ffd0;background:var(--green);box-shadow:0 0 15px #62f1aa88}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
+.module{border:1px solid #2d6074;background:linear-gradient(#11313f,#091d27);border-radius:15px;padding:16px;transition:.15s}
+.module.ok{border-color:#54a77d;box-shadow:inset 0 0 25px #40dc9420}
+.module.err{animation:shake .18s linear 2;border-color:#a84753}
+@keyframes shake{25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
+.modhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.modhead b{font-size:12px;letter-spacing:.1em}
+.state{font-size:9px;letter-spacing:.13em;color:#7fa5b1}
+.module.ok .state{color:var(--green)}
+.labels,.cells{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}
+.labels{margin-bottom:6px}
+.labels div{text-align:center;color:#8fd4e3;font:700 12px monospace;min-height:16px}
+.cell{
+  height:58px;border-radius:8px;border:1px solid #397084;background:#071820;
+  display:flex;align-items:center;justify-content:center;font:900 28px monospace;
+  cursor:pointer;user-select:none;transition:.12s;color:#effcff
+}
+.cell:hover{background:#0b2732;border-color:#62d8ef}
+.cell.on{background:#113b47;border-color:#7cecff;box-shadow:inset 0 0 18px #4ee8ff30,0 0 10px #44def333}
+.sum{margin:11px 0 10px;border:1px solid #1c4555;background:#06151c;border-radius:7px;padding:7px 9px;min-height:31px;font:700 13px monospace;color:#c8f4fd}
+.targetrow{display:grid;grid-template-columns:1fr auto;gap:9px}
+.target{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid #386477;background:#07161e;border-radius:8px;padding:9px 11px}
+.target small{font-size:9px;letter-spacing:.13em;color:#82aab7;font-weight:900}
+.target b{font:900 25px monospace;color:#fff2b8}
+button{border:1px solid #3c829b;background:linear-gradient(#16475b,#0e3241);color:white;border-radius:8px;padding:0 15px;font-weight:900;letter-spacing:.06em;cursor:pointer}
+button:hover{filter:brightness(1.12)}
+button:disabled{opacity:.4;cursor:not-allowed}
+.msg{min-height:20px;margin-top:8px;font-size:11px;color:#8fb2bd}
+.msg.bad{color:#ff9eaa}.msg.good{color:#8effbf}
+.footer{margin-top:18px;padding-top:16px;border-top:1px solid #204959;display:flex;justify-content:space-between;gap:12px;align-items:center}
+.help{font-size:11px;line-height:1.45;color:#8db0bb;max-width:780px}.help b{color:#daf9ff}
+.reset{padding:9px 12px;background:#211b18;border-color:#574a42;color:#cbb9ad}
+.overlay{position:fixed;inset:0;background:#021019e8;display:none;align-items:center;justify-content:center;padding:18px;z-index:50}
+.overlay.show{display:flex}
+.reward{width:min(580px,95vw);border:1px solid #4eaa80;background:radial-gradient(circle at 50% 0,#164b3b,#0a211d 58%,#061310);border-radius:19px;text-align:center;padding:32px;box-shadow:0 30px 80px #000b}
+.reward .mini{font-size:10px;color:var(--green);font-weight:900;letter-spacing:.18em}
+.reward h2{font-size:29px;margin:11px 0}
+.relic{width:112px;height:112px;margin:22px auto;display:grid;place-items:center;border-radius:21px;border:1px solid #69e7bf;background:#0b2223;font-size:60px;color:#a1ffdc;box-shadow:0 0 25px #40dba738,inset 0 0 25px #56e3ba20}
+.reward p{color:#b9d5ce;line-height:1.5}
+.reward button{padding:11px 17px}
+@media(max-width:780px){
+ header,.statusbar,.top{grid-template-columns:1fr}
+ .badge{justify-self:start}.counter{width:170px}.grid{grid-template-columns:1fr}
+ main{padding:16px}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+<header>
+  <div>
+    <div class="eyebrow">MUSEO DELL'INFORMATICA · GALLERIA DELL'INFORMAZIONE</div>
+    <h1>UNITÀ DI DECODIFICA BINARIA</h1>
+    <div class="sub">Sistema storico di conversione numerica — modulo di servizio</div>
+  </div>
+  <div class="badge"><small>STAZIONE 01</small>GRUPPO 1</div>
+</header>
+
+<div class="statusbar">
+  <div class="status"><span class="lamp" id="lamp"></span><strong id="machineState">ERRORE DI LETTURA — 4 MODULI DA RIPRISTINARE</strong></div>
+  <div class="tag" id="modeTag">MODALITÀ: —</div>
+  <div class="tag" id="classTag">CLASSE: —</div>
+</div>
+
+<main>
+  <div class="top">
+    <div class="instructions" id="instructions"></div>
+    <div class="counter"><span>CICLI MACCHINA</span><b>2847</b></div>
+  </div>
+
+  <div class="progress">
+    <div class="dot" id="d0"></div><div class="dot" id="d1"></div>
+    <div class="dot" id="d2"></div><div class="dot" id="d3"></div>
+  </div>
+
+  <section class="grid" id="grid"></section>
+
+  <div class="footer">
+    <div class="help" id="help"></div>
+  </div>
+</main>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="reward">
+    <div class="mini">DECODIFICA RIPRISTINATA</div>
+    <h2>Stazione completata</h2>
+    <div class="relic">◈</div>
+    <p>Il reperto è stato registrato automaticamente nel <b>Codificatore</b>.<br>Non è necessario annotare alcun codice.</p>
+    <button id="close">TORNA ALLA GALLERIA</button>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* Storage sicuro: la pagina continua a funzionare anche se il browser
+   blocca localStorage nell'anteprima o in un iframe. */
+const storage = {
+  get(k){
+    try { return localStorage.getItem(k); }
+    catch(e){ return null; }
+  },
+  set(k,v){
+    try { localStorage.setItem(k,v); return true; }
+    catch(e){ return false; }
+  }
+};
+
+function first(keys,fallback){
+  for(const k of keys){
+    const v=storage.get(k);
+    if(v!==null && String(v).trim()!=="") return v;
+  }
+  return fallback;
+}
+
+const rawMode=first(["museoInfo_mode","museoInfo_modalita","museoInfo_modeSelected","mode"],"CONSOLIDAMENTO");
+const mode=String(rawMode).toUpperCase().includes("RIPASSO")?"RIPASSO":"CONSOLIDAMENTO";
+const classe=String(first(["museoInfo_class","museoInfo_classe","museoInfo_classSelected","classe"],"DEMO")).trim()||"DEMO";
+const scope=(classe+"_"+mode).replace(/\s+/g,"_");
+
+const completionKeys=[
+  `museoInfo_${scope}_puzzle_01`,
+  `museoInfo_${scope}_enigma01`,
+  `museoInfo_${scope}_stazione01`
+];
+
+document.getElementById("modeTag").textContent="MODALITÀ: "+mode;
+document.getElementById("classTag").textContent="CLASSE: "+classe;
+
+const targets=[5,11,18,21];
+const weights=[16,8,4,2,1];
+const powerLabels=["2⁴","2³","2²","2¹","2⁰"];
+const solved=[false,false,false,false];
+const selected=targets.map(()=>new Set());
+
+const instructions=document.getElementById("instructions");
+const help=document.getElementById("help");
+
+if(mode==="CONSOLIDAMENTO"){
+  instructions.innerHTML=`La macchina deve ricostruire quattro numeri decimali.
+  <strong>Attiva le posizioni necessarie</strong>: quando una posizione viene attivata compare un <b>1</b>.
+  La somma dei valori selezionati appare sotto. Quando pensi di aver costruito il numero richiesto, premi <strong>VERIFICA</strong>.`;
+  help.innerHTML=`<b>CONSOLIDAMENTO:</b> i valori delle cinque posizioni sono già visibili.`;
+}else{
+  instructions.innerHTML=`La macchina deve ricostruire quattro numeri decimali.
+  <strong>Attiva le posizioni necessarie</strong>: quando una posizione viene attivata compare un <b>1</b>.
+  Ricostruisci il valore delle potenze di 2 e usa gli addendi mostrati per fare tu il calcolo. Se serve, consulta l'<strong>Archivio Tecnico</strong>.`;
+  help.innerHTML=`<b>RIPASSO:</b> sono mostrate soltanto le potenze di 2: devi ricordare quanto vale ogni posizione.`;
+}
+
+const grid=document.getElementById("grid");
+
+targets.forEach((target,idx)=>{
+  const labels=mode==="CONSOLIDAMENTO"?weights:powerLabels;
+  const module=document.createElement("article");
+  module.className="module";
+  module.id="m"+idx;
+  module.innerHTML=`
+    <div class="modhead">
+      <b>MODULO ${String(idx+1).padStart(2,"0")}</b>
+      <span class="state" id="state${idx}">IN ATTESA</span>
+    </div>
+    <div class="labels">${labels.map(v=>`<div>${v}</div>`).join("")}</div>
+    <div class="cells">
+      ${weights.map((_,pos)=>`<div class="cell" data-module="${idx}" data-pos="${pos}" role="button" tabindex="0" aria-label="Posizione ${pos+1}"></div>`).join("")}
+    </div>
+    <div class="sum" id="sum${idx}">ADDENDI: —</div>
+    <div class="targetrow">
+      <div class="target">
+        <small>NUMERO DECIMALE DA RAGGIUNGERE</small>
+        <b>${target}</b>
+      </div>
+      <button type="button" id="check${idx}">VERIFICA</button>
+    </div>
+    <div class="msg" id="msg${idx}"></div>
+  `;
+  grid.appendChild(module);
+});
+
+function valuesFor(idx){
+  return Array.from(selected[idx]).sort((a,b)=>a-b).map(pos=>weights[pos]);
+}
+function totalFor(idx){
+  return valuesFor(idx).reduce((a,b)=>a+b,0);
+}
+function renderSum(idx){
+  const vals=valuesFor(idx);
+  const box=document.getElementById("sum"+idx);
+  box.textContent=vals.length ? "ADDENDI: "+vals.join(" + ") : "ADDENDI: —";
+}
+function toggleCell(cell){
+  const idx=Number(cell.dataset.module);
+  const pos=Number(cell.dataset.pos);
+  if(solved[idx]) return;
+
+  if(selected[idx].has(pos)){
+    selected[idx].delete(pos);
+    cell.classList.remove("on");
+    cell.textContent="";
+  }else{
+    selected[idx].add(pos);
+    cell.classList.add("on");
+    cell.textContent="1";
+  }
+  renderSum(idx);
+}
+
+grid.addEventListener("click",e=>{
+  const cell=e.target.closest(".cell");
+  if(cell) toggleCell(cell);
+});
+grid.addEventListener("keydown",e=>{
+  const cell=e.target.closest(".cell");
+  if(cell && (e.key==="Enter" || e.key===" ")){
+    e.preventDefault();
+    toggleCell(cell);
+  }
+});
+
+function verify(idx){
+  if(solved[idx]) return;
+  const module=document.getElementById("m"+idx);
+  const msg=document.getElementById("msg"+idx);
+  module.classList.remove("err");
+  msg.className="msg";
+
+  if(selected[idx].size===0){
+    msg.textContent="Nessuna posizione è stata attivata.";
+    msg.classList.add("bad");
+    module.classList.add("err");
+    return;
+  }
+
+  if(totalFor(idx)!==targets[idx]){
+    msg.textContent="Il valore ottenuto non corrisponde al numero richiesto. Rivedi le posizioni attive.";
+    msg.classList.add("bad");
+    module.classList.add("err");
+    return;
+  }
+
+  solved[idx]=true;
+  module.classList.add("ok");
+  document.getElementById("state"+idx).textContent="RIPRISTINATO";
+  document.getElementById("d"+idx).classList.add("on");
+  document.getElementById("check"+idx).disabled=true;
+  msg.textContent="Modulo riattivato.";
+  msg.classList.add("good");
+
+  if(solved.every(Boolean)) complete();
+}
+
+targets.forEach((_,idx)=>{
+  document.getElementById("check"+idx).addEventListener("click",()=>verify(idx));
+});
+
+function alreadyComplete(){
+  return completionKeys.some(k=>storage.get(k)==="1");
+}
+function complete(){
+  completionKeys.forEach(k=>storage.set(k,"1"));
+  storage.set(`museoInfo_${scope}_relic_01`,"◈");
+  storage.set(`museoInfo_${scope}_puzzle_01_group`,"1");
+
+  document.getElementById("lamp").style.background="var(--green)";
+  document.getElementById("lamp").style.boxShadow="0 0 14px var(--green)";
+  document.getElementById("machineState").textContent="SISTEMA OPERATIVO — DECODIFICA RIPRISTINATA";
+  document.getElementById("overlay").classList.add("show");
+
+  try{
+    window.dispatchEvent(new CustomEvent("museoInfoPuzzleCompleted",{detail:{puzzle:1,group:1,classe,mode,relic:"◈"}}));
+  }catch(e){}
+}
+
+if(alreadyComplete()){
+  document.getElementById("lamp").style.background="var(--green)";
+  document.getElementById("lamp").style.boxShadow="0 0 14px var(--green)";
+  document.getElementById("machineState").textContent="SISTEMA OPERATIVO — STAZIONE GIÀ COMPLETATA";
+}
+
+document.getElementById("close").addEventListener("click",()=>{
+  document.getElementById("overlay").classList.remove("show");
+});
+
+
+
+})();
+</script>
+</body>
+</html>
