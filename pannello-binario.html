@@ -33,12 +33,36 @@ header{display:flex;align-items:center;gap:13px;padding:17px 22px;border-bottom:
   <section class="main">
     <p class="instruction"><b>Ogni luce accesa aggiunge il valore indicato.</b><br>Attivate le luci necessarie per rappresentare esattamente il numero richiesto.</p>
     <div class="lights" id="lights">
-      <button class="unit" data-value="1" aria-pressed="false"><span class="lamp"></span><span class="n">LUCE 1</span><span class="value">1</span></button>
-      <button class="unit" data-value="2" aria-pressed="false"><span class="lamp"></span><span class="n">LUCE 2</span><span class="value">2</span></button>
-      <button class="unit" data-value="4" aria-pressed="false"><span class="lamp"></span><span class="n">LUCE 3</span><span class="value">4</span></button>
-      <button class="unit" data-value="8" aria-pressed="false"><span class="lamp"></span><span class="n">LUCE 4</span><span class="value">8</span></button>
-      <button class="unit" data-value="16" aria-pressed="false"><span class="lamp"></span><span class="n">LUCE 5</span><span class="value">16</span></button>
-    </div>
+  <button class="unit" data-value="16" aria-pressed="false">
+    <span class="lamp"></span>
+    <span class="n">LUCE 5</span>
+    <span class="value">16</span>
+  </button>
+
+  <button class="unit" data-value="8" aria-pressed="false">
+    <span class="lamp"></span>
+    <span class="n">LUCE 4</span>
+    <span class="value">8</span>
+  </button>
+
+  <button class="unit" data-value="4" aria-pressed="false">
+    <span class="lamp"></span>
+    <span class="n">LUCE 3</span>
+    <span class="value">4</span>
+  </button>
+
+  <button class="unit" data-value="2" aria-pressed="false">
+    <span class="lamp"></span>
+    <span class="n">LUCE 2</span>
+    <span class="value">2</span>
+  </button>
+
+  <button class="unit" data-value="1" aria-pressed="false">
+    <span class="lamp"></span>
+    <span class="n">LUCE 1</span>
+    <span class="value">1</span>
+  </button>
+</div>
     <div class="readout"><div class="sum"><small>TOTALE ATTUALE</small><strong id="total">0</strong></div><div class="actions"><button class="reset" id="reset">AZZERA</button><button class="verify" id="verify">VERIFICA</button></div></div>
     <div class="feedback" id="feedback" aria-live="polite"></div>
   </section>
