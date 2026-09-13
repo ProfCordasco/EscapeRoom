@@ -297,16 +297,15 @@ main{padding:20px 24px 26px}
   letter-spacing:.13em;
   margin-bottom:9px;
 }
-.rest-rack,
-.binary-slots{
+.rest-rack{
   display:flex;
   flex-wrap:wrap;
   gap:8px;
   align-items:center;
+  margin-bottom:10px;
 }
-.rest-rack{margin-bottom:10px}
-.token{
-  width:42px;
+.rest-chip{
+  min-width:42px;
   height:42px;
   display:grid;
   place-items:center;
@@ -315,32 +314,22 @@ main{padding:20px 24px 26px}
   background:#172229;
   color:white;
   font:900 20px "Courier New",monospace;
-  cursor:pointer;
-  user-select:none;
 }
-.token.selected{
-  border-color:#ffe28d;
-  box-shadow:0 0 10px #ffd66f44;
-}
-.token.used{
-  opacity:.28;
-  cursor:not-allowed;
-}
-.slot{
-  width:46px;
-  height:46px;
-  display:grid;
-  place-items:center;
-  border:1px dashed #4c7b8d;
+.binary-input{
+  width:100%;
+  height:52px;
+  border:1px solid #4c7b8d;
   border-radius:8px;
   background:#081b24;
   color:#effcff;
-  font:900 21px "Courier New",monospace;
-  cursor:pointer;
+  text-align:center;
+  font:900 24px "Courier New",monospace;
+  letter-spacing:.16em;
+  outline:none;
 }
-.slot.filled{
-  border-style:solid;
-  border-color:#6eb7cc;
+.binary-input:focus{
+  border-color:#7de8fa;
+  box-shadow:0 0 0 2px #5be4ff20;
 }
 .verify-final{
   margin-top:10px;
@@ -557,8 +546,8 @@ const helpText=document.getElementById("helpText");
 if(modalita==="ripasso"){
   instructions.innerHTML=
     "La macchina riceve un numero decimale. Completa le <strong>divisioni successive per 2</strong>, "+
-    "impostando ogni quoziente e scegliendo il resto corretto. Alla fine usa le tessere dei resti "+
-    "per costruire il numero binario.";
+    "impostando ogni quoziente e scegliendo il resto corretto. Alla fine scrivi il numero binario "+
+    "nel campo di uscita.";
   helpText.innerHTML=
     "<b>RIPASSO:</b> la macchina non indica in quale ordine vadano letti i resti. "+
     "Se non ricordi la regola, consulta l'Archivio Tecnico.";
@@ -566,7 +555,7 @@ if(modalita==="ripasso"){
   instructions.innerHTML=
     "La macchina riceve un numero decimale. Completa le <strong>divisioni successive per 2</strong>, "+
     "impostando ogni quoziente e scegliendo il resto corretto. Quando il quoziente arriva a 0, "+
-    "ricostruisci il numero binario leggendo i resti <strong>dall'ultimo ottenuto al primo</strong>.";
+    "scrivi il numero binario nel campo di uscita leggendo i resti <strong>dall'ultimo ottenuto al primo</strong>.";
   helpText.innerHTML=
     "<b>CONSOLIDAMENTO:</b> dopo ogni passaggio corretto, il quoziente viene trasferito automaticamente "+
     "alla divisione successiva.";
@@ -625,7 +614,16 @@ numeri.forEach((numero,index)=>{
       <div class="rest-rack" id="rack${index}"></div>
 
       <div class="output-title">NUMERO BINARIO IN USCITA</div>
-      <div class="binary-slots" id="slots${index}"></div>
+      <input
+        class="binary-input"
+        id="binary${index}"
+        type="text"
+        inputmode="numeric"
+        autocomplete="off"
+        spellcheck="false"
+        maxlength="${sol.length}"
+        placeholder="Scrivi qui il numero binario"
+        aria-label="Numero binario finale">
 
       <button type="button" class="verify-final" id="final${index}">
         VERIFICA CONVERSIONE
@@ -641,9 +639,7 @@ numeri.forEach((numero,index)=>{
     numero,
     sol,
     step:0,
-    restiProdotti:[],
-    selectedToken:null,
-    slots:Array(sol.length).fill(null)
+    restiProdotti:[]
   };
 
   moduli.push(state);
@@ -737,74 +733,41 @@ function creaRiga(moduleIndex,rowIndex,dividendo){
 }
 
 /* ============================================================
-   TESSERE RESTI E USCITA BINARIA
-   Clic su tessera + clic su slot.
+   RESTI PRODOTTI E USCITA BINARIA TESTUALE
+   Il numero finale resta sempre modificabile.
    ============================================================ */
 
 function mostraUscita(moduleIndex){
   const state=moduli[moduleIndex];
   const output=document.getElementById("output"+moduleIndex);
   const rack=document.getElementById("rack"+moduleIndex);
-  const slots=document.getElementById("slots"+moduleIndex);
+  const binaryInput=document.getElementById("binary"+moduleIndex);
 
   output.hidden=false;
   rack.innerHTML="";
-  slots.innerHTML="";
 
-  state.restiProdotti.forEach((valore,i)=>{
-    const token=document.createElement("button");
-    token.type="button";
-    token.className="token";
-    token.textContent=valore;
-    token.dataset.index=i;
-    token.setAttribute("aria-label",`Resto ${valore}`);
-
-    token.addEventListener("click",()=>{
-      if(token.classList.contains("used")) return;
-
-      rack.querySelectorAll(".token").forEach(t=>t.classList.remove("selected"));
-      token.classList.add("selected");
-      state.selectedToken=i;
-    });
-
-    rack.appendChild(token);
+  state.restiProdotti.forEach((valore)=>{
+    const chip=document.createElement("div");
+    chip.className="rest-chip";
+    chip.textContent=valore;
+    rack.appendChild(chip);
   });
 
-  state.slots.forEach((_,slotIndex)=>{
-    const slot=document.createElement("button");
-    slot.type="button";
-    slot.className="slot";
-    slot.textContent="·";
-    slot.dataset.slot=slotIndex;
-    slot.setAttribute("aria-label",`Posizione binaria ${slotIndex+1}`);
+  binaryInput.value="";
+  binaryInput.disabled=false;
 
-    slot.addEventListener("click",()=>{
-      if(state.selectedToken===null) return;
+  /* Accetta soltanto 0 e 1 e limita la lunghezza. */
+  binaryInput.addEventListener("input",()=>{
+    binaryInput.value=
+      binaryInput.value
+        .replace(/[^01]/g,"")
+        .slice(0,state.sol.length);
 
-      const tokenIndex=state.selectedToken;
-      const token=rack.querySelector(`.token[data-index="${tokenIndex}"]`);
-      if(!token || token.classList.contains("used")) return;
+    const feedback=document.getElementById("feedback"+moduleIndex);
+    feedback.textContent="";
+    feedback.className="feedback";
 
-      // Se lo slot conteneva già una tessera, la restituisce al rack.
-      if(state.slots[slotIndex]!==null){
-        const oldIndex=state.slots[slotIndex].tokenIndex;
-        const oldToken=rack.querySelector(`.token[data-index="${oldIndex}"]`);
-        if(oldToken) oldToken.classList.remove("used");
-      }
-
-      state.slots[slotIndex]={
-        value:state.restiProdotti[tokenIndex],
-        tokenIndex
-      };
-
-      slot.textContent=state.restiProdotti[tokenIndex];
-      slot.classList.add("filled");
-      token.classList.add("used");
-      token.classList.remove("selected");
-      state.selectedToken=null;
-    });
-
-    slots.appendChild(slot);
+    document.getElementById("module"+moduleIndex).classList.remove("error");
   });
 
   document.getElementById("final"+moduleIndex).addEventListener("click",()=>{
@@ -824,14 +787,15 @@ function verificaFinale(moduleIndex){
   feedback.className="feedback";
   art.classList.remove("error");
 
-  if(state.slots.some(s=>s===null)){
-    feedback.textContent="Completate tutte le posizioni del numero binario.";
+  const binaryInput=document.getElementById("binary"+moduleIndex);
+  const costruito=binaryInput.value.trim();
+  const corretto=state.restiProdotti.slice().reverse().join("");
+
+  if(costruito.length!==corretto.length){
+    feedback.textContent="Scrivete il numero binario completo prima della verifica.";
     feedback.classList.add("bad");
     return;
   }
-
-  const costruito=state.slots.map(s=>s.value).join("");
-  const corretto=state.restiProdotti.slice().reverse().join("");
 
   if(costruito!==corretto){
     feedback.textContent=
@@ -846,6 +810,7 @@ function verificaFinale(moduleIndex){
   document.getElementById("state"+moduleIndex).textContent="CONVERTITA";
   document.getElementById("progress"+moduleIndex).classList.add("on");
   document.getElementById("final"+moduleIndex).disabled=true;
+  document.getElementById("binary"+moduleIndex).disabled=true;
   feedback.textContent="Conversione corretta.";
   feedback.classList.add("good");
 
