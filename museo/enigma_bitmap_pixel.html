@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Enigma 04 // Codificatore bitmap</title>
+  <style>
+    :root{--bg:#020912;--panel:#071a28;--line:#1b526c;--cyan:#4be8ff;--green:#48f39b;--red:#ff526b;--yellow:#ffd15c;--text:#eafaff;--muted:#91a8b8}
+    *{box-sizing:border-box}
+    html,body{margin:0;min-height:100%;font-family:Inter,Segoe UI,Arial,sans-serif;background:#020912;color:var(--text)}
+    body{padding:14px;background:radial-gradient(circle at 50% 0,#0b3044 0,#020912 48%)}
+    button,input{font:inherit}
+    .console{width:min(1080px,100%);margin:auto;border:1px solid var(--line);border-radius:18px;background:rgba(3,15,25,.96);box-shadow:0 0 34px rgba(75,232,255,.12);overflow:hidden}
+    header{padding:18px 22px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:16px;align-items:center;background:linear-gradient(90deg,#092337,#061722)}
+    .eyebrow{font-size:.72rem;letter-spacing:.18em;color:var(--cyan);text-transform:uppercase}
+    h1{font-size:clamp(1.15rem,3vw,1.8rem);margin:4px 0 0;letter-spacing:.06em}
+    .status{font-size:.78rem;color:var(--muted);text-align:right;white-space:nowrap}
+    .status b{color:var(--green)}
+    main{padding:20px}
+    .intro{margin:0 0 16px;color:#c9e3ed;line-height:1.45}
+    .legend{display:none;margin:0 0 16px;padding:10px 14px;border:1px solid #296a74;border-radius:10px;background:#09252c;color:#cffff1}
+    .legend.show{display:block}
+    .workspace{display:grid;grid-template-columns:minmax(250px,.9fr) minmax(300px,1.1fr);gap:22px;align-items:start}
+    .panel{border:1px solid var(--line);border-radius:14px;background:#061522;padding:16px}
+    .panel h2{margin:0 0 12px;font-size:.85rem;letter-spacing:.12em;color:var(--cyan);text-transform:uppercase}
+    .code{display:grid;gap:7px}
+    .code-row{display:grid;grid-template-columns:repeat(8,1fr);gap:5px}
+    .bit{display:grid;place-items:center;min-height:35px;border:1px solid #17445a;border-radius:5px;background:#020b13;color:#bceeff;font:700 1rem Consolas,monospace}
+    .grid-wrap{display:grid;place-items:center;padding:4px}
+    .pixel-grid{width:min(100%,430px);aspect-ratio:1;display:grid;grid-template-columns:repeat(8,1fr);border:3px solid var(--cyan);background:#143044;box-shadow:0 0 18px rgba(75,232,255,.2)}
+    .pixel{border:1px solid #72909d;background:#fff;cursor:pointer;padding:0;min-width:0;touch-action:manipulation}
+    .pixel:hover,.pixel:focus-visible{outline:3px solid var(--yellow);outline-offset:-3px;z-index:1}
+    .pixel.black{background:#050505}
+    .pixel.locked{cursor:default}
+    .answer{margin-top:20px;padding-top:18px;border-top:1px solid var(--line)}
+    label{display:block;margin-bottom:8px;color:#cde6ef;font-weight:700}
+    .answer-row{display:flex;gap:10px}
+    input{flex:1;min-width:0;padding:12px 14px;border:1px solid #2c6077;border-radius:9px;background:#020b13;color:#fff;text-transform:uppercase;outline:none}
+    input:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(75,232,255,.12)}
+    .verify{padding:12px 20px;border:0;border-radius:9px;background:var(--cyan);color:#021018;font-weight:900;letter-spacing:.05em;cursor:pointer}
+    .verify:hover{filter:brightness(1.12)}
+    .feedback{min-height:48px;margin-top:14px;padding:12px 14px;border-radius:9px;display:none;line-height:1.4}
+    .feedback.error{display:block;border:1px solid #8c3344;background:#291019;color:#ffdbe2}
+    .feedback.success{display:block;border:1px solid #287653;background:#09291d;color:#caffdf}
+    .artifact{display:none;margin-top:12px;text-align:center;color:var(--green);font-size:1.05rem;font-weight:800;letter-spacing:.08em}
+    .artifact.show{display:block}
+    .warning{margin-top:14px;color:var(--yellow);font-size:.82rem}
+    @media(max-width:760px){body{padding:6px}.workspace{grid-template-columns:1fr}header{align-items:flex-start}.status{white-space:normal}.answer-row{flex-direction:column}.verify{width:100%}.bit{min-height:29px}.console{border-radius:12px}main{padding:14px}}
+  </style>
+</head>
+<body>
+  <section class="console">
+    <header>
+      <div>
+        <div class="eyebrow">Galleria dell'informazione · Enigma 04</div>
+        <h1>CODIFICATORE BITMAP</h1>
+      </div>
+      <div class="status">UNITÀ: <b>PIXEL-08</b><br><span id="sessionStatus">SESSIONE IN LETTURA</span></div>
+    </header>
+
+    <main>
+      <p class="intro">Ricostruite l'immagine rappresentata dal codice binario. Fate clic sulle celle della griglia per colorarle o correggerle, poi indicate che cosa rappresenta.</p>
+      <div id="legend" class="legend"><strong>PROTOCOLLO DISPONIBILE:</strong> 1 = pixel nero · 0 = pixel bianco</div>
+
+      <div class="workspace">
+        <section class="panel">
+          <h2>Codice binario · 8 righe × 8 bit</h2>
+          <div id="binaryCode" class="code" aria-label="Codice binario dell'immagine"></div>
+        </section>
+
+        <section class="panel">
+          <h2>Griglia bitmap · 8 × 8 pixel</h2>
+          <div class="grid-wrap"><div id="pixelGrid" class="pixel-grid" role="grid" aria-label="Griglia bitmap interattiva"></div></div>
+        </section>
+      </div>
+
+      <section class="answer">
+        <label for="objectAnswer">Che cosa rappresenta l'immagine?</label>
+        <div class="answer-row">
+          <input id="objectAnswer" type="text" maxlength="30" autocomplete="off" placeholder="Scrivete la risposta">
+          <button id="verifyButton" class="verify" type="button">VERIFICA</button>
+        </div>
+        <div id="feedback" class="feedback" role="status" aria-live="polite"></div>
+        <div id="artifact" class="artifact">REPERTO DIGITALE ACQUISITO · ◇</div>
+        <div id="configWarning" class="warning" hidden>Configurazione del museo non rilevata: l'enigma resta utilizzabile, ma il completamento non può essere associato alla classe.</div>
+      </section>
+    </main>
+  </section>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const bitmap = [
+        "01100110",
+        "11111111",
+        "11111111",
+        "01111110",
+        "00111100",
+        "00011000",
+        "00000000",
+        "00000000"
+      ];
+
+      const codeBox = document.getElementById("binaryCode");
+      const grid = document.getElementById("pixelGrid");
+      const answer = document.getElementById("objectAnswer");
+      const verify = document.getElementById("verifyButton");
+      const feedback = document.getElementById("feedback");
+      const artifact = document.getElementById("artifact");
+      const legend = document.getElementById("legend");
+      const warning = document.getElementById("configWarning");
+      const sessionStatus = document.getElementById("sessionStatus");
+
+      function readFirst(keys) {
+        for (const key of keys) {
+          const value = localStorage.getItem(key);
+          if (value && value.trim()) return value.trim();
+        }
+        return "";
+      }
+
+      const classe = readFirst(["museoInfo_classe", "classe"]).toUpperCase();
+      const rawMode = readFirst(["museoInfo_modalita", "modalita"]).toLowerCase();
+      const modalita = rawMode.includes("consolid") ? "consolidamento" : rawMode.includes("ripass") ? "ripasso" : "";
+      const storageKey = classe && modalita ? `museoInfo_${classe}_${modalita}_enigma04` : "";
+
+      if (modalita === "consolidamento") legend.classList.add("show");
+      if (storageKey) sessionStatus.textContent = `${classe} · ${modalita.toUpperCase()}`;
+      else { sessionStatus.textContent = "CONFIGURAZIONE ASSENTE"; warning.hidden = false; }
+
+      bitmap.forEach((row, r) => {
+        const codeRow = document.createElement("div");
+        codeRow.className = "code-row";
+        [...row].forEach(bit => {
+          const cell = document.createElement("span");
+          cell.className = "bit";
+          cell.textContent = bit;
+          codeRow.appendChild(cell);
+        });
+        codeBox.appendChild(codeRow);
+
+        [...row].forEach((bit, c) => {
+          const pixel = document.createElement("button");
+          pixel.type = "button";
+          pixel.className = "pixel";
+          pixel.dataset.expected = bit;
+          pixel.dataset.value = "0";
+          pixel.setAttribute("role", "gridcell");
+          pixel.setAttribute("aria-label", `Riga ${r + 1}, colonna ${c + 1}: bianco`);
+          pixel.addEventListener("click", () => {
+            if (pixel.classList.contains("locked")) return;
+            const black = pixel.dataset.value !== "1";
+            pixel.dataset.value = black ? "1" : "0";
+            pixel.classList.toggle("black", black);
+            pixel.setAttribute("aria-label", `Riga ${r + 1}, colonna ${c + 1}: ${black ? "nero" : "bianco"}`);
+            clearFeedback();
+          });
+          grid.appendChild(pixel);
+        });
+      });
+
+      function normalize(text) {
+        return text.trim().toLocaleUpperCase("it-IT").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      }
+
+      function clearFeedback() {
+        feedback.className = "feedback";
+        feedback.textContent = "";
+      }
+
+      function complete() {
+        if (storageKey) localStorage.setItem(storageKey, "true");
+        [...grid.children].forEach(pixel => pixel.classList.add("locked"));
+        answer.disabled = true;
+        verify.disabled = true;
+        feedback.className = "feedback success";
+        feedback.textContent = "RICOSTRUZIONE CORRETTA. Immagine bitmap identificata e reperto acquisito.";
+        artifact.classList.add("show");
+      }
+
+      function check() {
+        const pixelsCorrect = [...grid.children].every(pixel => pixel.dataset.value === pixel.dataset.expected);
+        const answerCorrect = normalize(answer.value) === "CUORE";
+        if (pixelsCorrect && answerCorrect) return complete();
+
+        feedback.className = "feedback error";
+        if (!pixelsCorrect && !answer.value.trim()) feedback.textContent = "Ricostruzione incompleta. Controllate la corrispondenza tra codice e griglia, poi identificate l'immagine.";
+        else if (!pixelsCorrect) feedback.textContent = "La griglia non corrisponde ancora al codice binario. Controllate tutte le celle.";
+        else feedback.textContent = "La griglia è corretta, ma l'immagine non è stata identificata correttamente.";
+      }
+
+      verify.addEventListener("click", check);
+      answer.addEventListener("input", clearFeedback);
+      answer.addEventListener("keydown", event => { if (event.key === "Enter") check(); });
+
+      if (storageKey && localStorage.getItem(storageKey) === "true") complete();
+    })();
+  </script>
+</body>
+</html>
