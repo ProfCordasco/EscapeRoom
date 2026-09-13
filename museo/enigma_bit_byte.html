@@ -1,0 +1,797 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Enigma 03 — Bit, byte e sequenze</title>
+
+<style>
+:root{
+  --bg:#041018;
+  --panel:#0b2430;
+  --panel2:#0f2e3b;
+  --line:#2e6174;
+  --cyan:#74e8ff;
+  --green:#70f1ad;
+  --red:#ff6676;
+  --yellow:#ffd66f;
+  --text:#ecfbff;
+  --muted:#91b6c2;
+}
+*{box-sizing:border-box}
+html,body{
+  margin:0;
+  min-height:100%;
+  font-family:Inter,Segoe UI,Arial,sans-serif;
+  color:var(--text);
+  background:radial-gradient(circle at 50% 0%,#17394a 0%,#081923 44%,#030a0f 100%);
+}
+body{padding:16px}
+.console{
+  width:min(1180px,100%);
+  margin:auto;
+  border:1px solid #285568;
+  border-radius:18px;
+  overflow:hidden;
+  background:linear-gradient(180deg,#0b202a,#071720);
+  box-shadow:0 24px 70px #0009;
+}
+header{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:18px;
+  align-items:center;
+  padding:20px 24px;
+  background:linear-gradient(180deg,#183d4e,#102a36);
+  border-bottom:1px solid #2b5c70;
+}
+.eyebrow{
+  color:var(--cyan);
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:.17em;
+  margin-bottom:7px;
+}
+h1{
+  margin:0;
+  font-size:clamp(24px,3vw,38px);
+  letter-spacing:.035em;
+}
+.subtitle{margin-top:7px;color:var(--muted);font-size:13px}
+.badge{
+  min-width:165px;
+  text-align:center;
+  padding:11px 15px;
+  border-radius:11px;
+  border:1px solid #3d829a;
+  background:#0a202b;
+  font-weight:900;
+  letter-spacing:.08em;
+}
+.badge small{
+  display:block;
+  color:#75bfd0;
+  font-size:9px;
+  letter-spacing:.17em;
+  margin-bottom:4px;
+}
+.statusbar{
+  display:grid;
+  grid-template-columns:1fr auto auto;
+  gap:10px;
+  align-items:center;
+  padding:11px 24px;
+  background:#06151d;
+  border-bottom:1px solid #1c4251;
+  font-size:12px;
+}
+.machine-status{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  color:#c4dce4;
+}
+.lamp{
+  width:10px;height:10px;border-radius:50%;
+  background:var(--red);
+  box-shadow:0 0 12px var(--red);
+  flex:0 0 auto;
+}
+.tag{
+  border:1px solid #285a6d;
+  background:#0b2330;
+  border-radius:7px;
+  padding:7px 9px;
+  color:#b9f4ff;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.07em;
+  white-space:nowrap;
+}
+main{padding:20px 24px 26px}
+.warning{
+  display:none;
+  margin-bottom:16px;
+  padding:12px 14px;
+  border:1px solid #8b6c2d;
+  border-radius:10px;
+  background:#2d2411;
+  color:#ffe5a1;
+  font-size:12px;
+  line-height:1.45;
+}
+.warning.show{display:block}
+.instructions{
+  border:1px solid #28576a;
+  border-radius:13px;
+  background:#0a202a;
+  padding:15px 17px;
+  color:#c8dfe6;
+  line-height:1.5;
+}
+.instructions strong{color:white}
+.progress{
+  display:flex;
+  justify-content:center;
+  gap:18px;
+  margin:20px 0;
+}
+.progress-dot{
+  width:20px;height:20px;
+  border:2px solid #375d6e;
+  border-radius:50%;
+  background:#122730;
+  box-shadow:inset 0 0 8px #000;
+}
+.progress-dot.on{
+  border-color:#a6ffd0;
+  background:var(--green);
+  box-shadow:0 0 15px #62f1aa88;
+}
+.modules{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:15px;
+}
+.module{
+  border:1px solid #2d6074;
+  border-radius:15px;
+  padding:16px;
+  background:linear-gradient(180deg,#11313f,#091d27);
+}
+.module.success{
+  border-color:#54a77d;
+  box-shadow:inset 0 0 25px #40dc9420;
+}
+.module.error{border-color:#a84753}
+.module-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  margin-bottom:14px;
+}
+.module-title{
+  font-size:12px;
+  font-weight:900;
+  letter-spacing:.1em;
+}
+.module-state{
+  color:#7fa5b1;
+  font-size:9px;
+  letter-spacing:.13em;
+}
+.module.success .module-state{color:var(--green)}
+
+.sequence-wrap{
+  border:1px solid #356b7d;
+  border-radius:11px;
+  background:#061820;
+  padding:12px;
+  overflow-x:auto;
+}
+.sequence-meta{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:9px;
+  color:#88adba;
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.12em;
+}
+.bitcount{
+  color:#fff0a6;
+}
+.sequence{
+  display:flex;
+  gap:5px;
+  width:max-content;
+  min-width:100%;
+  justify-content:center;
+  align-items:center;
+}
+.bit{
+  width:28px;
+  min-width:28px;
+  height:38px;
+  display:grid;
+  place-items:center;
+  border:1px solid #346477;
+  border-radius:6px;
+  background:#0a222c;
+  color:#f4fdff;
+  font:900 18px "Courier New",monospace;
+}
+.bit.highlight{
+  border-color:#ffd66f;
+  background:#3a3116;
+  color:#fff5c2;
+  box-shadow:0 0 14px #ffd66f44;
+}
+.taskbox{
+  margin-top:12px;
+  display:grid;
+  gap:10px;
+}
+.label{
+  color:#82a9b5;
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.12em;
+}
+.type-input{
+  width:100%;
+  height:46px;
+  border:1px solid #376779;
+  border-radius:8px;
+  background:#06161d;
+  color:#fff4bd;
+  padding:0 12px;
+  text-transform:uppercase;
+  font:900 17px "Courier New",monospace;
+  outline:none;
+}
+.type-input:focus{
+  border-color:#7de8fa;
+  box-shadow:0 0 0 2px #5be4ff20;
+}
+.significance{
+  display:flex;
+  gap:8px;
+}
+.sig-btn{
+  flex:1;
+  min-height:43px;
+  border:1px solid #376779;
+  border-radius:8px;
+  background:#0a202a;
+  color:#eafaff;
+  font-weight:900;
+  cursor:pointer;
+}
+.sig-btn.selected{
+  border-color:#7be9ff;
+  background:#123b48;
+  box-shadow:0 0 10px #4be8ff22;
+}
+.sig-btn:disabled,
+.type-input:disabled{
+  opacity:.55;
+  cursor:not-allowed;
+}
+.verify{
+  min-height:44px;
+  border:1px solid #3c829b;
+  border-radius:8px;
+  background:linear-gradient(#16475b,#0e3241);
+  color:#fff;
+  font-weight:900;
+  letter-spacing:.06em;
+  cursor:pointer;
+}
+.verify:disabled{opacity:.45;cursor:not-allowed}
+.feedback{
+  min-height:20px;
+  color:#8fb2bd;
+  font-size:11px;
+}
+.feedback.good{color:#8effbf}
+.feedback.bad{color:#ff9eaa}
+.help{
+  margin-top:18px;
+  padding-top:16px;
+  border-top:1px solid #204959;
+  color:#8db0bb;
+  font-size:11px;
+  line-height:1.45;
+}
+.help b{color:#daf9ff}
+.overlay{
+  position:fixed;
+  inset:0;
+  z-index:100;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+  background:#021019e8;
+}
+.overlay.show{display:flex}
+.reward{
+  width:min(580px,95vw);
+  padding:32px;
+  text-align:center;
+  border:1px solid #4eaa80;
+  border-radius:19px;
+  background:radial-gradient(circle at 50% 0,#164b3b,#0a211d 58%,#061310);
+}
+.reward .mini{
+  color:var(--green);
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.18em;
+}
+.reward h2{margin:11px 0;font-size:29px}
+.relic{
+  width:112px;height:112px;
+  margin:22px auto;
+  display:grid;
+  place-items:center;
+  border:1px solid #69e7bf;
+  border-radius:21px;
+  background:#0b2223;
+  color:#a1ffdc;
+  font-size:60px;
+}
+.reward p{color:#b9d5ce;line-height:1.5}
+.reward button{
+  min-height:44px;
+  border:1px solid #3c829b;
+  border-radius:8px;
+  background:linear-gradient(#16475b,#0e3241);
+  color:#fff;
+  padding:0 15px;
+  font-weight:900;
+  cursor:pointer;
+}
+@media(max-width:900px){
+  .modules{grid-template-columns:1fr}
+}
+@media(max-width:650px){
+  header,.statusbar{grid-template-columns:1fr}
+  .badge{justify-self:start}
+  main{padding:16px}
+}
+</style>
+</head>
+
+<body>
+
+<div class="console">
+
+<header>
+  <div>
+    <div class="eyebrow">MUSEO DELL'INFORMATICA · GALLERIA DELL'INFORMAZIONE</div>
+    <h1>ANALIZZATORE DI SEQUENZE</h1>
+    <div class="subtitle">Riconoscimento di bit, byte, word e significatività delle posizioni</div>
+  </div>
+
+  <div class="badge">
+    <small>ENIGMA 03</small>
+    GRUPPO 3
+  </div>
+</header>
+
+<div class="statusbar">
+  <div class="machine-status">
+    <span class="lamp" id="mainLamp"></span>
+    <strong id="machineStatus">4 UNITÀ DATI DA CLASSIFICARE</strong>
+  </div>
+  <div class="tag" id="modeTag">MODALITÀ: —</div>
+  <div class="tag" id="classTag">CLASSE: —</div>
+</div>
+
+<main>
+
+  <div class="warning" id="configWarning">
+    Configurazione del museo non rilevata. L'enigma è utilizzabile, ma il completamento
+    non potrà essere registrato nel Codificatore.
+  </div>
+
+  <div class="instructions" id="instructions"></div>
+
+  <div class="progress">
+    <div class="progress-dot" id="progress0"></div>
+    <div class="progress-dot" id="progress1"></div>
+    <div class="progress-dot" id="progress2"></div>
+    <div class="progress-dot" id="progress3"></div>
+  </div>
+
+  <section class="modules" id="modules"></section>
+
+  <div class="help" id="helpText"></div>
+
+</main>
+</div>
+
+<div class="overlay" id="completionOverlay">
+  <div class="reward">
+    <div class="mini">ANALISI COMPLETATA</div>
+    <h2>Enigma risolto</h2>
+    <div class="relic">⌬</div>
+    <p>
+      Il reperto è stato registrato automaticamente nel <b>Codificatore</b>.<br>
+      Non è necessario annotare alcun codice.
+    </p>
+    <button type="button" id="closeOverlay">TORNA ALLA GALLERIA</button>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ============================================================
+   STORAGE CONDIVISO CON IL MUSEO
+   ============================================================ */
+
+function getStorage(key){
+  try{return localStorage.getItem(key);}
+  catch(e){return null;}
+}
+function setStorage(key,value){
+  try{
+    localStorage.setItem(key,value);
+    return true;
+  }catch(e){
+    return false;
+  }
+}
+
+const classe=(getStorage("museoInfo_classe")||"").trim().toUpperCase();
+const modalita=(getStorage("museoInfo_modalita")||"").trim().toLowerCase();
+
+const configurazioneValida=
+  !!classe && ["ripasso","consolidamento"].includes(modalita);
+
+const completionKey=configurazioneValida
+  ? `museoInfo_${classe}_${modalita}_enigma03`
+  : null;
+
+document.getElementById("classTag").textContent="CLASSE: "+(classe||"—");
+document.getElementById("modeTag").textContent=
+  "MODALITÀ: "+
+  (modalita==="ripasso"?"RIPASSO":
+   modalita==="consolidamento"?"CONSOLIDAMENTO":"NON CONFIGURATA");
+
+if(!configurazioneValida){
+  document.getElementById("configWarning").classList.add("show");
+}
+
+function valoreCompletato(v){
+  return ["true","1","completato","completed","solved"]
+    .includes(String(v||"").trim().toLowerCase());
+}
+
+/* ============================================================
+   TESTI PER MODALITÀ
+   ============================================================ */
+
+const instructions=document.getElementById("instructions");
+const helpText=document.getElementById("helpText");
+
+if(modalita==="ripasso"){
+  instructions.innerHTML=
+    "Osserva ogni sequenza e identifica il <strong>tipo di unità dati</strong>. "+
+    "Quando viene evidenziato un bit, indica se si tratta del <strong>LSB</strong> o del <strong>MSB</strong>.";
+  helpText.innerHTML=
+    "<b>RIPASSO:</b> il numero di bit non viene indicato. Se non ricordi le dimensioni di byte, word, "+
+    "double word e quad word, consulta l'Archivio Tecnico.";
+}else{
+  instructions.innerHTML=
+    "Osserva ogni sequenza e identifica il <strong>tipo di unità dati</strong>. "+
+    "Il contatore mostra quanti bit contiene la sequenza. Quando viene evidenziato un bit, "+
+    "indica se è il <strong>LSB</strong> o il <strong>MSB</strong>.";
+  helpText.innerHTML=
+    "<b>CONSOLIDAMENTO:</b> usa il numero di bit come indizio per riconoscere l'unità dati.";
+}
+
+/* ============================================================
+   DATI
+   ============================================================ */
+
+const moduliDati=[
+  {
+    bits:"10110110",
+    tipo:"BYTE",
+    highlight:7,
+    significato:"LSB"
+  },
+  {
+    bits:"1100101011010011",
+    tipo:"WORD",
+    highlight:0,
+    significato:"MSB"
+  },
+  {
+    bits:"10110100100101101100101001011011",
+    tipo:"DOUBLE WORD",
+    highlight:null,
+    significato:null
+  },
+  {
+    bits:"1101011001011010100110010110010110100101101001011010010110101101",
+    tipo:"QUAD WORD",
+    highlight:null,
+    significato:null
+  }
+];
+
+const risolti=[false,false,false,false];
+const scelteSignificato=[null,null,null,null];
+
+const container=document.getElementById("modules");
+
+/* ============================================================
+   CREAZIONE MODULI
+   ============================================================ */
+
+moduliDati.forEach((dato,index)=>{
+
+  const art=document.createElement("article");
+  art.className="module";
+  art.id="module"+index;
+
+  let bitHTML="";
+  [...dato.bits].forEach((bit,pos)=>{
+    bitHTML+=
+      `<div class="bit ${dato.highlight===pos?"highlight":""}">${bit}</div>`;
+  });
+
+  const richiedeSignificato=dato.highlight!==null;
+
+  art.innerHTML=`
+    <div class="module-head">
+      <div class="module-title">UNITÀ DATI ${String(index+1).padStart(2,"0")}</div>
+      <div class="module-state" id="state${index}">IN ATTESA</div>
+    </div>
+
+    <div class="sequence-wrap">
+      <div class="sequence-meta">
+        <span>SEQUENZA BINARIA</span>
+        <span class="bitcount">
+          ${modalita==="consolidamento" ? dato.bits.length+" BIT" : ""}
+        </span>
+      </div>
+      <div class="sequence">${bitHTML}</div>
+    </div>
+
+    <div class="taskbox">
+      <div class="label">TIPO DI UNITÀ DATI</div>
+      <input
+        class="type-input"
+        id="type${index}"
+        type="text"
+        autocomplete="off"
+        spellcheck="false"
+        placeholder="Scrivi la risposta">
+
+      ${
+        richiedeSignificato
+        ? `
+          <div class="label">BIT EVIDENZIATO</div>
+          <div class="significance">
+            <button type="button" class="sig-btn" data-module="${index}" data-value="LSB">LSB</button>
+            <button type="button" class="sig-btn" data-module="${index}" data-value="MSB">MSB</button>
+          </div>
+        `
+        : ""
+      }
+
+      <button type="button" class="verify" id="check${index}">VERIFICA</button>
+      <div class="feedback" id="feedback${index}"></div>
+    </div>
+  `;
+
+  container.appendChild(art);
+});
+
+/* ============================================================
+   SELEZIONE LSB / MSB
+   ============================================================ */
+
+document.querySelectorAll(".sig-btn").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    const moduleIndex=Number(btn.dataset.module);
+
+    document.querySelectorAll(`.sig-btn[data-module="${moduleIndex}"]`)
+      .forEach(b=>b.classList.remove("selected"));
+
+    btn.classList.add("selected");
+    scelteSignificato[moduleIndex]=btn.dataset.value;
+
+    const feedback=document.getElementById("feedback"+moduleIndex);
+    feedback.textContent="";
+    feedback.className="feedback";
+    document.getElementById("module"+moduleIndex).classList.remove("error");
+  });
+});
+
+/* ============================================================
+   NORMALIZZAZIONE RISPOSTE
+   ============================================================ */
+
+function normalizzaTipo(value){
+  return String(value||"")
+    .trim()
+    .toUpperCase()
+    .replace(/\s+/g," ");
+}
+
+function tipoCorretto(risposta,atteso){
+  const r=normalizzaTipo(risposta);
+
+  if(atteso==="BYTE"){
+    return ["BYTE","1 BYTE"].includes(r);
+  }
+
+  if(atteso==="WORD"){
+    return ["WORD","1 WORD"].includes(r);
+  }
+
+  if(atteso==="DOUBLE WORD"){
+    return [
+      "DOUBLE WORD",
+      "DOUBLEWORD",
+      "DOPPIA WORD",
+      "2 WORD"
+    ].includes(r);
+  }
+
+  if(atteso==="QUAD WORD"){
+    return [
+      "QUAD WORD",
+      "QUADWORD",
+      "QUADRUPLA WORD",
+      "4 WORD"
+    ].includes(r);
+  }
+
+  return false;
+}
+
+/* ============================================================
+   VERIFICA
+   ============================================================ */
+
+function verifica(index){
+  if(risolti[index]) return;
+
+  const dato=moduliDati[index];
+  const art=document.getElementById("module"+index);
+  const feedback=document.getElementById("feedback"+index);
+  const typeInput=document.getElementById("type"+index);
+
+  art.classList.remove("error");
+  feedback.textContent="";
+  feedback.className="feedback";
+
+  if(typeInput.value.trim()===""){
+    feedback.textContent="Indicate il tipo di unità dati.";
+    feedback.classList.add("bad");
+    return;
+  }
+
+  if(!tipoCorretto(typeInput.value,dato.tipo)){
+    feedback.textContent=
+      "Classificazione non corretta. Controllate la lunghezza della sequenza.";
+    feedback.classList.add("bad");
+    art.classList.add("error");
+    return;
+  }
+
+  if(dato.significato!==null){
+
+    if(scelteMancante(index)){
+      feedback.textContent="Indicate se il bit evidenziato è LSB o MSB.";
+      feedback.classList.add("bad");
+      return;
+    }
+
+    if(scelteSignificato[index]!==dato.significato){
+      feedback.textContent=
+        "La classificazione dell'unità è corretta, ma la posizione significativa non lo è.";
+      feedback.classList.add("bad");
+      art.classList.add("error");
+      return;
+    }
+  }
+
+  risolti[index]=true;
+  art.classList.add("success");
+  document.getElementById("state"+index).textContent="CLASSIFICATA";
+  document.getElementById("progress"+index).classList.add("on");
+  document.getElementById("check"+index).disabled=true;
+  typeInput.disabled=true;
+
+  document.querySelectorAll(`.sig-btn[data-module="${index}"]`)
+    .forEach(b=>b.disabled=true);
+
+  feedback.textContent="Unità dati riconosciuta correttamente.";
+  feedback.classList.add("good");
+
+  if(risolti.every(Boolean)){
+    completaEnigma();
+  }
+}
+
+function scelteMancante(index){
+  return scelteSignificato[index]===null;
+}
+
+moduliDati.forEach((_,index)=>{
+  document.getElementById("check"+index)
+    .addEventListener("click",()=>verifica(index));
+
+  document.getElementById("type"+index)
+    .addEventListener("input",()=>{
+      const feedback=document.getElementById("feedback"+index);
+      feedback.textContent="";
+      feedback.className="feedback";
+      document.getElementById("module"+index).classList.remove("error");
+    });
+});
+
+/* ============================================================
+   COMPLETAMENTO E LOCALSTORAGE
+   ============================================================ */
+
+function completaEnigma(){
+  const lamp=document.getElementById("mainLamp");
+  const status=document.getElementById("machineStatus");
+
+  lamp.style.background="var(--green)";
+  lamp.style.boxShadow="0 0 14px var(--green)";
+  status.textContent="ANALIZZATORE OPERATIVO — 4 UNITÀ CLASSIFICATE";
+
+  if(configurazioneValida && completionKey){
+    setStorage(completionKey,"true");
+
+    try{
+      window.dispatchEvent(new CustomEvent("museoInfoPuzzleCompleted",{
+        detail:{
+          enigma:3,
+          gruppo:3,
+          classe,
+          modalita,
+          chiave:completionKey,
+          reperto:"⌬"
+        }
+      }));
+    }catch(e){}
+  }
+
+  document.getElementById("completionOverlay").classList.add("show");
+}
+
+/* ============================================================
+   STATO GIÀ COMPLETATO
+   ============================================================ */
+
+if(completionKey && valoreCompletato(getStorage(completionKey))){
+  document.getElementById("mainLamp").style.background="var(--green)";
+  document.getElementById("mainLamp").style.boxShadow="0 0 14px var(--green)";
+  document.getElementById("machineStatus").textContent=
+    "ANALIZZATORE OPERATIVO — ENIGMA GIÀ REGISTRATO";
+}
+
+document.getElementById("closeOverlay").addEventListener("click",()=>{
+  document.getElementById("completionOverlay").classList.remove("show");
+});
+
+})();
+</script>
+
+</body>
+</html>
