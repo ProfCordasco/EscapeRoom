@@ -21,14 +21,19 @@
 *{box-sizing:border-box}
 html,body{
   margin:0;
+  width:100%;
+  max-width:100%;
   min-height:100%;
+  overflow-x:hidden;
   font-family:Inter,Segoe UI,Arial,sans-serif;
   color:var(--text);
   background:radial-gradient(circle at 50% 0%,#17394a 0%,#081923 44%,#030a0f 100%);
 }
 body{padding:16px}
 .console{
-  width:min(1180px,100%);
+  width:100%;
+  max-width:1180px;
+  min-width:0;
   margin:auto;
   border:1px solid #285568;
   border-radius:18px;
@@ -108,7 +113,12 @@ h1{
   letter-spacing:.07em;
   white-space:nowrap;
 }
-main{padding:20px 24px 26px}
+main{
+  width:100%;
+  max-width:100%;
+  min-width:0;
+  padding:20px 24px 26px;
+}
 .warning{
   display:none;
   margin-bottom:16px;
@@ -152,8 +162,13 @@ main{padding:20px 24px 26px}
   display:grid;
   grid-template-columns:repeat(2,minmax(0,1fr));
   gap:15px;
+  width:100%;
+  max-width:100%;
+  min-width:0;
 }
 .module{
+  min-width:0;
+  max-width:100%;
   border:1px solid #2d6074;
   border-radius:15px;
   padding:16px;
@@ -184,11 +199,14 @@ main{padding:20px 24px 26px}
 .module.success .module-state{color:var(--green)}
 
 .sequence-wrap{
+  width:100%;
+  max-width:100%;
+  min-width:0;
   border:1px solid #356b7d;
   border-radius:11px;
   background:#061820;
   padding:12px;
-  overflow-x:auto;
+  overflow-x:hidden;
 }
 .sequence-meta{
   display:flex;
@@ -204,16 +222,17 @@ main{padding:20px 24px 26px}
   color:#fff0a6;
 }
 .sequence{
-  display:flex;
+  display:grid;
+  grid-template-columns:repeat(var(--cols,8),minmax(0,1fr));
   gap:5px;
-  width:max-content;
-  min-width:100%;
-  justify-content:center;
+  width:100%;
+  max-width:100%;
+  min-width:0;
   align-items:center;
 }
 .bit{
-  width:28px;
-  min-width:28px;
+  width:100%;
+  min-width:0;
   height:38px;
   display:grid;
   place-items:center;
@@ -358,10 +377,53 @@ main{padding:20px 24px 26px}
 @media(max-width:900px){
   .modules{grid-template-columns:1fr}
 }
-@media(max-width:650px){
-  header,.statusbar{grid-template-columns:1fr}
-  .badge{justify-self:start}
-  main{padding:16px}
+
+@media(max-width:700px){
+  body{padding:8px}
+  .console{border-radius:12px}
+  header{
+    grid-template-columns:1fr;
+    gap:12px;
+    padding:16px;
+  }
+  .badge{
+    justify-self:start;
+    min-width:0;
+    width:auto;
+  }
+  .statusbar{
+    grid-template-columns:1fr;
+    padding:10px 16px;
+  }
+  .tag{
+    white-space:normal;
+    overflow-wrap:anywhere;
+  }
+  main{padding:14px}
+  .module{padding:12px}
+  .sequence-wrap{padding:9px}
+  .sequence{gap:4px}
+  .bit{
+    height:34px;
+    font-size:16px;
+  }
+}
+
+@media(max-width:480px){
+  body{padding:4px}
+  h1{font-size:22px}
+  .subtitle{font-size:12px}
+  .instructions{padding:12px}
+  .progress{gap:12px;margin:14px 0}
+  .sequence-meta{
+    flex-direction:column;
+    align-items:flex-start;
+    gap:4px;
+  }
+  .significance{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+  }
 }
 </style>
 </head>
@@ -533,6 +595,15 @@ const scelteSignificato=[null,null,null,null];
 
 const container=document.getElementById("modules");
 
+function aggiornaColonneSequenze(){
+  const stretto = window.innerWidth <= 560;
+  document.querySelectorAll(".sequence").forEach((seq,index)=>{
+    const n = moduliDati[index].bits.length;
+    seq.style.setProperty("--cols", stretto ? Math.min(n,8) : Math.min(n,16));
+  });
+}
+
+
 /* ============================================================
    CREAZIONE MODULI
    ============================================================ */
@@ -564,7 +635,7 @@ moduliDati.forEach((dato,index)=>{
           ${modalita==="consolidamento" ? dato.bits.length+" BIT" : ""}
         </span>
       </div>
-      <div class="sequence">${bitHTML}</div>
+      <div class="sequence" style="--cols:${Math.min(dato.bits.length,16)}">${bitHTML}</div>
     </div>
 
     <div class="taskbox">
@@ -596,6 +667,9 @@ moduliDati.forEach((dato,index)=>{
 
   container.appendChild(art);
 });
+
+aggiornaColonneSequenze();
+window.addEventListener("resize",aggiornaColonneSequenze);
 
 /* ============================================================
    SELEZIONE LSB / MSB
