@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Enigma 05 // Laboratorio formati</title>
+<style>
+:root{--bg:#020912;--panel:#071a28;--line:#1b526c;--cyan:#4be8ff;--green:#48f39b;--red:#ff526b;--yellow:#ffd15c;--text:#eafaff;--muted:#91a8b8}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Inter,Segoe UI,Arial,sans-serif;background:#020912;color:var(--text)}
+body{padding:12px;background:radial-gradient(circle at 50% 0,#0b3044 0,#020912 48%)}button,select{font:inherit}
+.console{width:min(1120px,100%);margin:auto;border:1px solid var(--line);border-radius:18px;background:rgba(3,15,25,.97);box-shadow:0 0 34px rgba(75,232,255,.12);overflow:hidden}
+header{padding:18px 22px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:16px;align-items:center;background:linear-gradient(90deg,#092337,#061722)}
+.eyebrow{font-size:.72rem;letter-spacing:.18em;color:var(--cyan);text-transform:uppercase}h1{font-size:clamp(1.15rem,3vw,1.8rem);margin:4px 0 0;letter-spacing:.06em}.status{font-size:.78rem;color:var(--muted);text-align:right}.status b{color:var(--green)}
+main{padding:20px}.intro{margin:0 0 16px;color:#c9e3ed;line-height:1.45}.panel{border:1px solid var(--line);border-radius:14px;background:#061522;padding:16px;margin-bottom:18px}.panel h2{margin:0 0 12px;font-size:.88rem;letter-spacing:.11em;color:var(--cyan);text-transform:uppercase}
+.comparison{display:grid;grid-template-columns:1fr 1fr;gap:16px}.sample{border:1px solid #24566d;border-radius:12px;padding:12px;background:#04101a}.zoom{height:170px;border-radius:8px;display:grid;place-items:center;overflow:hidden;background:#dceaf0;position:relative}.zoom::after{content:'ZOOM 800%';position:absolute;right:7px;bottom:6px;padding:3px 6px;border-radius:4px;background:#061522;color:var(--cyan);font-size:.62rem;letter-spacing:.08em}
+.pixel-flower{display:grid;grid-template-columns:repeat(9,15px);grid-template-rows:repeat(9,15px);image-rendering:pixelated}.pixel-flower i{width:15px;height:15px;background:transparent}.pixel-flower .p{background:#e52b63}.pixel-flower .c{background:#ffd15c}.pixel-flower .s{background:#299660}
+.vector-flower{width:125px;height:125px}.choice{display:flex;gap:8px;margin-top:10px}.choice button{flex:1;padding:9px 5px;border:1px solid #296078;border-radius:8px;background:#071c2b;color:#ccecf7;cursor:pointer;font-weight:800}.choice button.selected{border-color:var(--yellow);background:#4b3b0b;color:#fff1b4;box-shadow:0 0 0 2px rgba(255,209,92,.13)}
+.cards{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.card{padding:14px;border:1px solid #24566d;border-radius:11px;background:#04101a}.card-top{display:flex;gap:10px;align-items:center;margin-bottom:9px}.icon{width:44px;height:44px;border:1px solid #2b6b83;border-radius:8px;display:grid;place-items:center;background:#092536;font-size:1.45rem}.card h3{font-size:.94rem;margin:0}.card p{font-size:.8rem;color:#abc7d2;margin:4px 0 0;line-height:1.35}select{width:100%;padding:10px;border:1px solid #2c6077;border-radius:8px;background:#020b13;color:#fff;outline:none}select:focus{border-color:var(--cyan)}
+.help{display:none;margin:0 0 18px;padding:12px 14px;border:1px solid #296a74;border-radius:10px;background:#09252c;color:#cffff1;font-size:.82rem;line-height:1.55}.help.show{display:block}.help b{color:var(--yellow)}
+.actions{text-align:center}.verify{padding:13px 26px;border:0;border-radius:9px;background:var(--cyan);color:#021018;font-weight:900;letter-spacing:.06em;cursor:pointer}.feedback{display:none;margin-top:14px;padding:12px 14px;border-radius:9px;line-height:1.4}.feedback.error{display:block;border:1px solid #8c3344;background:#291019;color:#ffdbe2}.feedback.success{display:block;border:1px solid #287653;background:#09291d;color:#caffdf}.artifact{display:none;margin-top:12px;color:var(--green);font-weight:900;letter-spacing:.08em}.artifact.show{display:block}.warning{margin-top:12px;color:var(--yellow);font-size:.8rem}
+@media(max-width:720px){body{padding:5px}.comparison,.cards{grid-template-columns:1fr}main{padding:14px}header{align-items:flex-start}.status{font-size:.7rem}.zoom{height:145px}}
+</style>
+</head>
+<body>
+<section class="console">
+<header><div><div class="eyebrow">Galleria dell'informazione · Enigma 05</div><h1>LABORATORIO FORMATI</h1></div><div class="status">STAZIONE: <b>RESTAURO DIGITALE</b><br><span id="sessionStatus">SESSIONE IN LETTURA</span></div></header>
+<main>
+<p class="intro">Analizzate le immagini ingrandite, riconoscete il tipo di rappresentazione e scegliete il formato più adatto per ogni richiesta del museo.</p>
+<div id="help" class="help"><b>SCHEDE TECNICHE:</b> JPG è adatto alle fotografie · PNG supporta la trasparenza · GIF supporta brevi animazioni · SVG è vettoriale e può essere ingrandito senza perdere definizione.</div>
+
+<section class="panel"><h2>Fase 1 · Analisi allo zoom</h2>
+<div class="comparison">
+  <article class="sample"><div class="zoom" aria-label="Immagine ingrandita con pixel visibili"><div id="pixelFlower" class="pixel-flower"></div></div><div class="choice" data-answer="bitmap"><button type="button" data-value="bitmap">BITMAP</button><button type="button" data-value="vettoriale">VETTORIALE</button></div></article>
+  <article class="sample"><div class="zoom" aria-label="Immagine ingrandita con bordi definiti"><svg class="vector-flower" viewBox="0 0 120 120" aria-hidden="true"><path d="M60 108V65" stroke="#299660" stroke-width="8" stroke-linecap="round"/><ellipse cx="43" cy="83" rx="19" ry="9" fill="#299660" transform="rotate(28 43 83)"/><g fill="#e52b63"><ellipse cx="60" cy="31" rx="16" ry="25"/><ellipse cx="60" cy="31" rx="16" ry="25" transform="rotate(72 60 55)"/><ellipse cx="60" cy="31" rx="16" ry="25" transform="rotate(144 60 55)"/><ellipse cx="60" cy="31" rx="16" ry="25" transform="rotate(216 60 55)"/><ellipse cx="60" cy="31" rx="16" ry="25" transform="rotate(288 60 55)"/></g><circle cx="60" cy="55" r="14" fill="#ffd15c"/></svg></div><div class="choice" data-answer="vettoriale"><button type="button" data-value="bitmap">BITMAP</button><button type="button" data-value="vettoriale">VETTORIALE</button></div></article>
+</div></section>
+
+<section class="panel"><h2>Fase 2 · Richieste di esportazione</h2><div class="cards">
+<article class="card"><div class="card-top"><div class="icon">📷</div><div><h3>Fotografia del reperto</h3><p>Molti colori e dettagli realistici; file destinato al catalogo web.</p></div></div><select data-answer="jpg"><option value="">Selezionate il formato</option><option>JPG</option><option>PNG</option><option>GIF</option><option>SVG</option></select></article>
+<article class="card"><div class="card-top"><div class="icon">◇</div><div><h3>Logo sul manifesto</h3><p>Deve essere ingrandito molto, mantenendo bordi perfettamente definiti.</p></div></div><select data-answer="svg"><option value="">Selezionate il formato</option><option>JPG</option><option>PNG</option><option>GIF</option><option>SVG</option></select></article>
+<article class="card"><div class="card-top"><div class="icon">▣</div><div><h3>Icona trasparente</h3><p>Deve essere collocata su sfondi diversi senza riquadro bianco.</p></div></div><select data-answer="png"><option value="">Selezionate il formato</option><option>JPG</option><option>PNG</option><option>GIF</option><option>SVG</option></select></article>
+<article class="card"><div class="card-top"><div class="icon">▶</div><div><h3>Breve animazione ciclica</h3><p>Una piccola sequenza di immagini deve ripetersi automaticamente.</p></div></div><select data-answer="gif"><option value="">Selezionate il formato</option><option>JPG</option><option>PNG</option><option>GIF</option><option>SVG</option></select></article>
+</div></section>
+
+<div class="actions"><button id="verify" class="verify" type="button">VERIFICA RESTAURO</button><div id="feedback" class="feedback" role="status" aria-live="polite"></div><div id="artifact" class="artifact">REPERTO DIGITALE ACQUISITO · ⬢</div><div id="warning" class="warning" hidden>Configurazione del museo non rilevata: la prova è utilizzabile, ma il completamento non può essere associato alla classe.</div></div>
+</main></section>
+<script>
+(()=>{"use strict";
+const pattern=["000010000","001111100","011111110","111101111","111111111","011111110","000111000","000010000","000111000"];
+const flower=document.getElementById("pixelFlower");pattern.forEach((row,r)=>[...row].forEach((v,c)=>{const x=document.createElement("i");if(v==="1")x.className=(r<6?(r===3&&c===4?"c":"p"):"s");flower.appendChild(x)}));
+const readFirst=keys=>{for(const k of keys){const v=localStorage.getItem(k);if(v&&v.trim())return v.trim()}return""};
+const classe=readFirst(["museoInfo_classe","classe"]).toUpperCase();const raw=readFirst(["museoInfo_modalita","modalita"]).toLowerCase();const modalita=raw.includes("consolid")?"consolidamento":raw.includes("ripass")?"ripasso":"";const storageKey=classe&&modalita?`museoInfo_${classe}_${modalita}_enigma05`:"";
+const help=document.getElementById("help"),status=document.getElementById("sessionStatus"),warning=document.getElementById("warning"),feedback=document.getElementById("feedback"),verify=document.getElementById("verify"),artifact=document.getElementById("artifact");
+if(modalita==="consolidamento")help.classList.add("show");if(storageKey)status.textContent=`${classe} · ${modalita.toUpperCase()}`;else{status.textContent="CONFIGURAZIONE ASSENTE";warning.hidden=false}
+document.querySelectorAll(".choice button").forEach(btn=>btn.addEventListener("click",()=>{const box=btn.closest(".choice");box.querySelectorAll("button").forEach(b=>b.classList.remove("selected"));btn.classList.add("selected");box.dataset.value=btn.dataset.value;clear()}));document.querySelectorAll("select").forEach(s=>s.addEventListener("change",clear));
+function clear(){feedback.className="feedback";feedback.textContent=""}
+function complete(){if(storageKey)localStorage.setItem(storageKey,"true");document.querySelectorAll("button,select").forEach(x=>x.disabled=true);feedback.className="feedback success";feedback.textContent="RESTAURO COMPLETATO. Rappresentazioni e formati sono stati associati correttamente.";artifact.classList.add("show")}
+function check(){const choices=[...document.querySelectorAll(".choice")],selects=[...document.querySelectorAll("select")];const missing=choices.some(x=>!x.dataset.value)||selects.some(x=>!x.value);const wrongTypes=choices.some(x=>x.dataset.value!==x.dataset.answer);const wrongFormats=selects.some(x=>x.value.toLowerCase()!==x.dataset.answer);if(!missing&&!wrongTypes&&!wrongFormats)return complete();feedback.className="feedback error";feedback.textContent=missing?"Completate entrambe le fasi prima di verificare.":wrongTypes&&wrongFormats?"Alcune classificazioni e alcuni formati non sono corretti. Riesaminate gli indizi.":wrongTypes?"La scelta dei formati è corretta, ma ricontrollate le due immagini ingrandite.":"Le immagini sono state classificate correttamente, ma uno o più formati non sono adatti alla richiesta."}
+verify.addEventListener("click",check);if(storageKey&&localStorage.getItem(storageKey)==="true")complete();
+})();
+</script>
+</body>
+</html>
