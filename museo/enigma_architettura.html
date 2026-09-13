@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Enigma 06 — Riattiva l'architettura</title>
+<style>
+:root{
+  --bg:#071018;--panel:#0d1b26;--panel2:#112736;--line:#335268;
+  --cyan:#59dfff;--green:#5ee6a3;--red:#ff6b7d;--yellow:#ffd86a;
+  --text:#eef8ff;--muted:#9db1bf;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:Inter,Segoe UI,Arial,sans-serif;background:
+radial-gradient(circle at 20% 0%,rgba(68,143,190,.15),transparent 30%),
+linear-gradient(180deg,#061018,#0a151f 65%,#050a0f);color:var(--text)}
+body{padding:16px}
+.wrap{max-width:1180px;margin:auto}
+.header{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;padding:18px 20px;border:1px solid var(--line);border-radius:16px;background:rgba(9,23,33,.96);box-shadow:0 18px 50px rgba(0,0,0,.3)}
+.kicker{font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--cyan);font-weight:900}
+h1{margin:5px 0 4px;font-size:clamp(24px,3vw,38px)}
+.sub{color:var(--muted);line-height:1.45;max-width:760px}
+.badges{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.badge{padding:8px 11px;border-radius:999px;border:1px solid #355c72;background:#0b1821;font-size:12px;font-weight:900}
+.notice{margin:14px 0;padding:13px 15px;border:1px solid #285069;border-radius:12px;background:#0a1721;line-height:1.45}
+.notice strong{color:var(--cyan)}
+.progress{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:15px 0 20px}
+.dot{height:9px;border-radius:99px;border:1px solid #31566b;background:#173142}
+.dot.done{background:linear-gradient(90deg,#31cb7d,#74efb1);border-color:#5ee5a0}
+.stage{border:1px solid var(--line);border-radius:17px;overflow:hidden;background:#0b1823;box-shadow:0 14px 40px rgba(0,0,0,.18)}
+.stagehead{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 18px;border-bottom:1px solid var(--line);background:linear-gradient(90deg,#102433,#0c1b26)}
+.stagehead h2{margin:0;font-size:20px}
+.step{width:36px;height:36px;display:grid;place-items:center;border:1px solid #347697;border-radius:10px;background:#12364a;color:#c5f4ff;font-weight:900}
+.stagebody{padding:18px}
+.instruction{font-size:17px;line-height:1.5;margin:0 0 14px}
+.scaffold{padding:10px 12px;border-left:3px solid var(--cyan);background:#091722;color:#cceaf8;margin:0 0 16px;border-radius:8px}
+.arch{display:grid;grid-template-columns:minmax(240px,.82fr) minmax(420px,1.18fr);gap:18px}
+.tray,.board{border:1px solid #2c4d61;border-radius:15px;background:#09151e;padding:15px}
+.tray h3,.board h3{margin:0 0 12px}
+.parts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.part{padding:14px 10px;border:1px solid #44657a;border-radius:12px;background:#102431;font-weight:900;text-align:center;cursor:grab;user-select:none;touch-action:none}
+.part.used{opacity:.35;cursor:default}
+.boardArea{position:relative;min-height:430px;border:4px solid #3f505a;border-radius:14px;background:
+linear-gradient(90deg,transparent 48%,rgba(65,116,132,.1) 50%,transparent 52%),
+linear-gradient(#1d2c33,#121b20);overflow:hidden}
+.slot{position:absolute;width:145px;height:86px;border:2px dashed #5d8298;border-radius:13px;background:rgba(16,40,52,.65);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:6px;transition:.15s}
+.slot.hover{border-color:var(--cyan);box-shadow:0 0 0 4px rgba(89,223,255,.16)}
+.slot.filled{border-style:solid;border-color:var(--green);background:#11392a}
+.slot .hint{font-size:11px;color:#b9d5e4;margin-top:5px;font-weight:600}
+#slotCPU{left:50%;top:43%;transform:translate(-50%,-50%)}
+#slotMEM{left:50%;top:12%;transform:translateX(-50%)}
+#slotIN{left:7%;top:58%}
+#slotOUT{right:7%;top:58%}
+.busLine{position:absolute;background:#395464;opacity:.28;transition:.2s}
+.busLine.on{background:var(--cyan);opacity:1;box-shadow:0 0 12px rgba(89,223,255,.75)}
+#b1{left:49.3%;top:30%;width:10px;height:62px}
+#b2{left:25%;top:63%;width:25%;height:8px}
+#b3{left:50%;top:63%;width:25%;height:8px}
+#b4{left:49.3%;top:50%;width:10px;height:58px}
+.status{min-height:24px;margin-top:12px;font-weight:850}
+.status.ok{color:var(--green)}.status.err{color:#ff9aa8}
+.actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:15px}
+.btn{border:0;border-radius:10px;padding:11px 17px;font-weight:900;background:linear-gradient(#7de8ff,#47c6ed);color:#041218;cursor:pointer}
+.btn:disabled{opacity:.42;cursor:not-allowed}
+.choices{display:flex;gap:9px;flex-wrap:wrap}
+.choice{border:1px solid #3b6075;border-radius:10px;background:#102633;color:#eef8ff;padding:10px 13px;font-weight:900;cursor:pointer}
+.choice.sel{border-color:var(--cyan);background:#154158}.choice.correct{border-color:var(--green);background:#103b2b;color:#d2ffeb}.choice.wrong{border-color:var(--red);background:#451b25}
+.busTask{display:none;margin-top:20px;padding:15px;border:1px solid #31546a;border-radius:13px;background:#091721}
+.busTask.show{display:block}
+.busBtns{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}
+.busbtn{padding:10px 13px;border:1px solid #40667c;border-radius:10px;background:#102633;color:white;font-weight:900;cursor:pointer}
+.busbtn.on{background:#123f52;border-color:var(--cyan)}
+.pathBox{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:15px}
+.node{min-height:86px;border:1px solid #385e73;border-radius:12px;background:#0e2230;display:grid;place-items:center;text-align:center;padding:10px;font-weight:900;cursor:pointer;position:relative}
+.node.done{border-color:var(--green);background:#123828}
+.node .num{position:absolute;top:6px;right:8px;font-size:11px;color:var(--muted)}
+.msg{margin-top:12px;font-weight:850}
+.msg.ok{color:var(--green)}.msg.err{color:#ff9aa8}
+.finish{display:none;margin-top:20px;padding:24px;border:1px solid #418d69;border-radius:18px;background:linear-gradient(#0f2e24,#0a2119);text-align:center}
+.finish.show{display:block}
+.relic{width:100px;height:100px;margin:17px auto 10px;border:1px solid #5ce6a0;border-radius:22px;background:#091d16;color:#a3ffd3;display:grid;place-items:center;font-size:58px}
+.hidden{display:none!important}
+@media(max-width:820px){body{padding:9px}.header{flex-direction:column}.badges{justify-content:flex-start}.arch{grid-template-columns:1fr}.boardArea{min-height:390px}.pathBox{grid-template-columns:1fr 1fr}.node:last-child{grid-column:1/-1}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<section class="header">
+  <div>
+    <div class="kicker">Museo dell'Informatica // Galleria Hardware</div>
+    <h1>ENIGMA 06 — RIATTIVA L'ARCHITETTURA</h1>
+    <div class="sub">Alcuni componenti non comunicano più tra loro. Ricostruite il sistema, ripristinate il bus e verificate il percorso delle informazioni.</div>
+  </div>
+  <div class="badges">
+    <div class="badge">GRUPPO 2</div>
+    <div class="badge" id="modeBadge">MODALITÀ —</div>
+  </div>
+</section>
+
+<div class="notice" id="modeNotice"></div>
+
+<div class="progress">
+  <div class="dot" id="p1"></div>
+  <div class="dot" id="p2"></div>
+  <div class="dot" id="p3"></div>
+</div>
+
+<section class="stage" id="stage">
+  <div class="stagehead">
+    <div style="display:flex;align-items:center;gap:12px"><div class="step" id="stepNum">1</div><h2 id="stepTitle">Ricostruzione del sistema</h2></div>
+    <div class="badge" id="counter">1 / 3</div>
+  </div>
+  <div class="stagebody" id="stageBody">
+    <p class="instruction">Trascinate i quattro componenti negli alloggiamenti corretti della scheda.</p>
+    <div class="scaffold" id="scaffold1"></div>
+    <div class="arch">
+      <div class="tray">
+        <h3>COMPONENTI DISPONIBILI</h3>
+        <div class="parts">
+          <div class="part" draggable="true" data-part="CPU">CPU</div>
+          <div class="part" draggable="true" data-part="MEMORIA">MEMORIA</div>
+          <div class="part" draggable="true" data-part="INPUT">INPUT</div>
+          <div class="part" draggable="true" data-part="OUTPUT">OUTPUT</div>
+        </div>
+        <div class="status" id="partStatus">Posizionate tutti i componenti.</div>
+      </div>
+      <div class="board">
+        <h3>ARCHITETTURA DEL COMPUTER</h3>
+        <div class="boardArea" id="boardArea">
+          <div class="busLine" id="b1"></div><div class="busLine" id="b2"></div><div class="busLine" id="b3"></div><div class="busLine" id="b4"></div>
+          <div class="slot" id="slotCPU" data-accept="CPU"><strong>?</strong><div class="hint"></div></div>
+          <div class="slot" id="slotMEM" data-accept="MEMORIA"><strong>?</strong><div class="hint"></div></div>
+          <div class="slot" id="slotIN" data-accept="INPUT"><strong>?</strong><div class="hint"></div></div>
+          <div class="slot" id="slotOUT" data-accept="OUTPUT"><strong>?</strong><div class="hint"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="busTask" id="busTask">
+      <h3 style="margin-top:0">ERRORE: COMUNICAZIONE INTERNA ASSENTE</h3>
+      <p>Ripristinate il collegamento comune tra i componenti.</p>
+      <div class="busBtns">
+        <button class="busbtn" data-bus="b1">COLLEGAMENTO 1</button>
+        <button class="busbtn" data-bus="b2">COLLEGAMENTO 2</button>
+        <button class="busbtn" data-bus="b3">COLLEGAMENTO 3</button>
+        <button class="busbtn" data-bus="b4">COLLEGAMENTO 4</button>
+      </div>
+      <div id="busQuestion" class="hidden">
+        <p><strong>Qual è la funzione del BUS?</strong></p>
+        <div class="choices" id="busChoices">
+          <button class="choice" data-v="a">Memorizzare permanentemente i programmi.</button>
+          <button class="choice" data-v="b">Permettere lo scambio di informazioni tra i componenti.</button>
+          <button class="choice" data-v="c">Eseguire direttamente tutte le operazioni matematiche.</button>
+        </div>
+        <div class="actions">
+          <button class="btn" id="verifyBus" disabled>VERIFICA</button>
+          <div class="msg" id="busFeedback"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="busTask" id="pathTask">
+      <h3 style="margin-top:0">TEST DI FUNZIONAMENTO</h3>
+      <p>Un dato arriva dall'esterno. Selezionate i blocchi nell'ordine in cui deve attraversare il sistema.</p>
+      <div class="pathBox">
+        <div class="node" data-node="INPUT">INPUT<span class="num"></span></div>
+        <div class="node" data-node="MEMORIA">MEMORIA<span class="num"></span></div>
+        <div class="node" data-node="CPU">CPU<span class="num"></span></div>
+        <div class="node" data-node="OUTPUT">OUTPUT<span class="num"></span></div>
+        <div class="node" data-node="MEMORIA2">MEMORIA<span class="num"></span></div>
+      </div>
+      <div class="msg" id="pathFeedback">Percorso da completare: INPUT → MEMORIA → CPU → MEMORIA → OUTPUT</div>
+    </div>
+  </div>
+</section>
+
+<section class="finish" id="finish">
+  <div class="kicker">Sistema operativo</div>
+  <h2>ARCHITETTURA RIPRISTINATA</h2>
+  <p>Tutti i componenti comunicano correttamente.</p>
+  <div class="relic">⬢</div>
+  <strong>RELIQUIA RECUPERATA</strong>
+  <div style="margin-top:8px;color:var(--muted);font-size:12px">Il Codificatore ha registrato il completamento dell'enigma.</div>
+</section>
+</div>
+
+<script>
+(() => {
+  const classe=(localStorage.getItem("museoInfo_classe")||"").trim().toUpperCase();
+  const modalita=(localStorage.getItem("museoInfo_modalita")||"").trim().toLowerCase();
+  const solvedKey=`museoInfo_${classe}_${modalita}_enigma06`;
+  const validSession=!!classe && ["ripasso","consolidamento"].includes(modalita);
+
+  document.getElementById("modeBadge").textContent="MODALITÀ "+(modalita?modalita.toUpperCase():"NON CONFIGURATA");
+  const notice=document.getElementById("modeNotice");
+
+  if(!validSession){
+    notice.innerHTML="<strong>Sessione non configurata.</strong> Tornate alla configurazione del museo e selezionate classe e modalità.";
+    document.getElementById("stage").classList.add("hidden");
+    return;
+  }
+
+  if(modalita==="consolidamento"){
+    notice.innerHTML="<strong>CONSOLIDAMENTO.</strong> Gli alloggiamenti mostrano brevi indizi funzionali per guidarvi nella ricostruzione.";
+  }else{
+    notice.innerHTML="<strong>RIPASSO.</strong> Gli alloggiamenti non mostrano suggerimenti. Se necessario, consultate l'Archivio tecnico.";
+  }
+
+  const hints={
+    CPU:"Elabora le istruzioni",
+    MEMORIA:"Conserva dati e programmi",
+    INPUT:"Riceve dati dall'esterno",
+    OUTPUT:"Comunica i risultati"
+  };
+  if(modalita==="consolidamento"){
+    document.querySelectorAll(".slot").forEach(s=>{
+      s.querySelector(".hint").textContent=hints[s.dataset.accept];
+    });
+    document.getElementById("scaffold1").textContent="Usate gli indizi funzionali presenti negli alloggiamenti.";
+  }else{
+    document.getElementById("scaffold1").textContent="Nessun suggerimento operativo: ricostruite l'architettura usando ciò che ricordate oppure consultate l'Archivio.";
+  }
+
+  let dragged=null;
+  let placed=0;
+  document.querySelectorAll(".part").forEach(p=>{
+    p.addEventListener("dragstart",()=>{if(!p.classList.contains("used"))dragged=p;});
+    p.addEventListener("dragend",()=>dragged=null);
+    p.addEventListener("pointerdown",e=>{
+      if(e.pointerType==="mouse" || p.classList.contains("used")) return;
+      dragged=p;
+    });
+  });
+
+  document.querySelectorAll(".slot").forEach(slot=>{
+    slot.addEventListener("dragover",e=>{e.preventDefault();slot.classList.add("hover")});
+    slot.addEventListener("dragleave",()=>slot.classList.remove("hover"));
+    slot.addEventListener("drop",e=>{e.preventDefault();slot.classList.remove("hover");place(slot);});
+    slot.addEventListener("pointerup",()=>{ if(dragged) place(slot); });
+  });
+
+  function place(slot){
+    if(!dragged || dragged.classList.contains("used") || slot.classList.contains("filled")) return;
+    const status=document.getElementById("partStatus");
+    if(dragged.dataset.part===slot.dataset.accept){
+      slot.classList.add("filled");
+      slot.querySelector("strong").textContent=dragged.dataset.part;
+      slot.querySelector(".hint").textContent="";
+      dragged.classList.add("used");
+      dragged= null;
+      placed++;
+      status.textContent="Componente posizionato correttamente.";
+      status.className="status ok";
+      if(placed===4){
+        document.getElementById("p1").classList.add("done");
+        document.getElementById("stepNum").textContent="2";
+        document.getElementById("stepTitle").textContent="Ripristino del BUS";
+        document.getElementById("counter").textContent="2 / 3";
+        document.getElementById("busTask").classList.add("show");
+        status.textContent="Tutti i componenti sono stati riconosciuti.";
+      }
+    }else{
+      status.textContent="Questo componente non appartiene a quell'alloggiamento. Riprova.";
+      status.className="status err";
+      dragged=null;
+    }
+  }
+
+  let busCount=0, busSel="";
+  document.querySelectorAll(".busbtn").forEach(b=>{
+    b.addEventListener("click",()=>{
+      if(b.classList.contains("on"))return;
+      b.classList.add("on");
+      document.getElementById(b.dataset.bus).classList.add("on");
+      busCount++;
+      if(busCount===4)document.getElementById("busQuestion").classList.remove("hidden");
+    });
+  });
+
+  const busChoices=document.getElementById("busChoices");
+  const verifyBus=document.getElementById("verifyBus");
+  busChoices.addEventListener("click",e=>{
+    const b=e.target.closest(".choice"); if(!b)return;
+    busSel=b.dataset.v;
+    busChoices.querySelectorAll(".choice").forEach(x=>x.classList.remove("sel","wrong","correct"));
+    b.classList.add("sel");
+    verifyBus.disabled=false;
+  });
+
+  verifyBus.addEventListener("click",()=>{
+    const feedback=document.getElementById("busFeedback");
+    const selected=busChoices.querySelector(`[data-v="${busSel}"]`);
+    busChoices.querySelectorAll(".choice").forEach(x=>x.classList.remove("wrong","correct"));
+    if(busSel==="b"){
+      selected.classList.add("correct");
+      feedback.textContent="Corretto. Il BUS permette ai componenti di scambiare informazioni.";
+      feedback.className="msg ok";
+      busChoices.querySelectorAll(".choice").forEach(x=>x.disabled=true);
+      verifyBus.disabled=true;
+      document.getElementById("p2").classList.add("done");
+      document.getElementById("stepNum").textContent="3";
+      document.getElementById("stepTitle").textContent="Test di funzionamento";
+      document.getElementById("counter").textContent="3 / 3";
+      document.getElementById("pathTask").classList.add("show");
+    }else{
+      selected.classList.add("wrong");
+      feedback.textContent="Risposta non corretta. Potete cambiarla e riprovare.";
+      feedback.className="msg err";
+    }
+  });
+
+  const sequence=["INPUT","MEMORIA","CPU","MEMORIA2","OUTPUT"];
+  let seqIndex=0;
+  document.querySelectorAll(".node").forEach(n=>{
+    n.addEventListener("click",()=>{
+      const feedback=document.getElementById("pathFeedback");
+      if(n.classList.contains("done")) return;
+      if(n.dataset.node===sequence[seqIndex]){
+        n.classList.add("done");
+        n.querySelector(".num").textContent=seqIndex+1;
+        seqIndex++;
+        feedback.textContent=`Passaggio corretto: ${seqIndex} di ${sequence.length}.`;
+        feedback.className="msg ok";
+        if(seqIndex===sequence.length){
+          document.getElementById("p3").classList.add("done");
+          localStorage.setItem(solvedKey,"true");
+          feedback.textContent="Percorso completato. Il sistema è tornato operativo.";
+          document.getElementById("finish").classList.add("show");
+          setTimeout(()=>document.getElementById("finish").scrollIntoView({behavior:"smooth",block:"center"}),300);
+        }
+      }else{
+        feedback.textContent="Percorso non corretto. Ripartite dall'ultimo passaggio giusto.";
+        feedback.className="msg err";
+      }
+    });
+  });
+
+  const existing=(localStorage.getItem(solvedKey)||"").toLowerCase();
+  if(["true","1","completato","completed","solved"].includes(existing)){
+    document.getElementById("finish").classList.add("show");
+  }
+})();
+</script>
+</body>
+</html>
