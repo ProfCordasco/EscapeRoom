@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Enigma 10 — Gerarchia e memorie di massa</title>
+<style>
+:root{
+  --bg:#071018;--panel:#0b1823;--line:#315064;--cyan:#5adfff;
+  --green:#63e6a7;--red:#ff7182;--text:#eef9ff;--muted:#9fb3c0
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:Inter,Segoe UI,Arial,sans-serif;background:linear-gradient(180deg,#061018,#0a151f 60%,#050b10);color:var(--text)}
+body{padding:14px}
+.wrap{max-width:1180px;margin:auto}
+.header{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;padding:18px 20px;border:1px solid var(--line);border-radius:16px;background:#0a1721}
+.kicker{font-size:12px;letter-spacing:.15em;color:var(--cyan);font-weight:900;text-transform:uppercase}
+h1{margin:5px 0;font-size:clamp(24px,3vw,38px)}
+.sub{color:var(--muted);line-height:1.45;max-width:820px}
+.badges{display:flex;gap:8px;flex-wrap:wrap}
+.badge{padding:8px 11px;border-radius:999px;border:1px solid #355c72;background:#0b1821;font-size:12px;font-weight:900}
+.notice{margin:14px 0;padding:13px 15px;border:1px solid #285069;border-radius:12px;background:#0a1721;line-height:1.45}
+.notice strong{color:var(--cyan)}
+.panel{border:1px solid var(--line);border-radius:16px;background:var(--panel);overflow:hidden;margin-top:14px}
+.head{padding:14px 18px;border-bottom:1px solid var(--line);background:#102330;font-weight:900}
+.body{padding:18px}
+
+.phase-title{font-weight:900;font-size:18px;margin-bottom:8px}
+.phase-desc{color:var(--muted);line-height:1.45;margin-bottom:14px}
+
+.hierarchy-wrap{display:grid;grid-template-columns:250px 1fr;gap:16px;align-items:start}
+.bank{display:flex;flex-direction:column;gap:10px}
+.mem-card{border:1px solid #3d6174;border-radius:11px;background:#102838;padding:12px 14px;font-weight:900;cursor:grab;user-select:none;text-align:center}
+.mem-card.dragging{opacity:.45}
+.slots{display:flex;flex-direction:column;gap:9px}
+.slot{min-height:58px;border:2px dashed #45697c;border-radius:11px;padding:8px;display:flex;align-items:center;gap:10px;background:#09141d}
+.slot.over{border-color:var(--cyan);background:#0c2532}
+.slot-num{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;border:1px solid #4a6a7d;color:#9edff3;font-weight:900;flex:0 0 auto}
+.slot .filled{width:100%;padding:10px 12px;border-radius:9px;background:#153243;border:1px solid #4a7085;text-align:center;font-weight:900}
+
+.controls{display:flex;gap:10px;justify-content:center;margin-top:18px;flex-wrap:wrap}
+button{border:0;border-radius:10px;padding:12px 18px;font-weight:900;cursor:pointer}
+.verify{background:linear-gradient(#7cecff,#4acbe9);color:#041217}
+.reset{background:#1a2b36;color:#d9e8ef;border:1px solid #3b596a}
+.feedback{margin-top:14px;padding:12px 14px;min-height:48px;border:1px solid #2c4a5d;border-radius:11px;background:#071119;color:var(--muted)}
+.feedback.ok{color:var(--green);border-color:#347654}
+.feedback.err{color:#ff9fab;border-color:#743847}
+
+.phase2{display:none}
+.phase2.show{display:block}
+.case-card{border:1px solid #355b70;border-radius:14px;background:#0c1a25;padding:18px}
+.case-step{font-size:12px;color:#79dff8;font-weight:900;letter-spacing:.1em;margin-bottom:8px}
+.case-text{font-size:18px;line-height:1.5;margin-bottom:16px}
+.choices{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.choice{border:1px solid #3b6277;background:#112937;color:#e8f7ff;border-radius:12px;padding:14px 8px;font-weight:900;cursor:pointer}
+.choice:hover{border-color:#5adfff}
+.choice.correct{border-color:#4d9d75;background:#123528}
+.choice.wrong{border-color:#8e4350;background:#32161b}
+.progress{margin-top:12px;color:#9fb3c0;font-size:13px}
+
+.finish{display:none;margin-top:18px;padding:22px;border:1px solid #418d69;border-radius:17px;background:linear-gradient(#0f2e24,#0a2119);text-align:center}
+.finish.show{display:block}
+.relic{width:96px;height:96px;margin:15px auto 9px;border:1px solid #5ce6a0;border-radius:21px;background:#091d16;color:#a3ffd3;display:grid;place-items:center;font-size:56px}
+.hidden{display:none!important}
+
+@media(max-width:900px){
+  .header{flex-direction:column}
+  .hierarchy-wrap{grid-template-columns:1fr}
+  .choices{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<section class="header">
+  <div>
+    <div class="kicker">Museo dell'Informatica // Galleria Hardware</div>
+    <h1>ENIGMA 10 — GERARCHIA E MEMORIE DI MASSA</h1>
+    <div class="sub">Il sistema di archiviazione del museo è stato alterato. Ricostruite prima la gerarchia delle memorie, poi scegliete il supporto più adatto alle diverse esigenze.</div>
+  </div>
+  <div class="badges">
+    <div class="badge">GRUPPO 2</div>
+    <div class="badge" id="mode">MODALITÀ —</div>
+  </div>
+</section>
+
+<div class="notice" id="notice"></div>
+
+<section class="panel" id="phase1">
+  <div class="head">FASE 1 // RICOSTRUZIONE DELLA GERARCHIA</div>
+  <div class="body">
+    <div class="phase-title">Ordinate le memorie</div>
+    <div class="phase-desc" id="phase1desc"></div>
+
+    <div class="hierarchy-wrap">
+      <div class="bank" id="bank">
+        <div class="mem-card" draggable="true" data-mem="HDD">HDD</div>
+        <div class="mem-card" draggable="true" data-mem="REGISTRI">REGISTRI</div>
+        <div class="mem-card" draggable="true" data-mem="SSD">SSD</div>
+        <div class="mem-card" draggable="true" data-mem="CACHE">CACHE</div>
+        <div class="mem-card" draggable="true" data-mem="RAM">RAM</div>
+      </div>
+
+      <div class="slots">
+        <div class="slot" data-slot="0"><div class="slot-num">1</div><span>Posizione 1</span></div>
+        <div class="slot" data-slot="1"><div class="slot-num">2</div><span>Posizione 2</span></div>
+        <div class="slot" data-slot="2"><div class="slot-num">3</div><span>Posizione 3</span></div>
+        <div class="slot" data-slot="3"><div class="slot-num">4</div><span>Posizione 4</span></div>
+        <div class="slot" data-slot="4"><div class="slot-num">5</div><span>Posizione 5</span></div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="verify" id="verifyHierarchy">VERIFICA GERARCHIA</button>
+      <button class="reset" id="resetHierarchy">RIPRISTINA ORDINE</button>
+    </div>
+
+    <div class="feedback" id="fb1">Inserite tutti e cinque gli elementi nella gerarchia.</div>
+  </div>
+</section>
+
+<section class="panel phase2" id="phase2">
+  <div class="head">FASE 2 // SCELTA DEL SUPPORTO</div>
+  <div class="body">
+    <div class="phase-title">Quale memoria di massa è più adatta?</div>
+    <div class="phase-desc">Leggete una situazione alla volta e scegliete il supporto più adatto.</div>
+
+    <div class="case-card">
+      <div class="case-step" id="caseStep"></div>
+      <div class="case-text" id="caseText"></div>
+
+      <div class="choices" id="choices">
+        <button class="choice" data-choice="SSD">SSD</button>
+        <button class="choice" data-choice="HDD">HDD</button>
+        <button class="choice" data-choice="PENDRIVE">PEN DRIVE</button>
+        <button class="choice" data-choice="SD">SCHEDA SD</button>
+        <button class="choice" data-choice="CDDVD">CD / DVD</button>
+      </div>
+
+      <div class="feedback" id="fb2">Scegliete il supporto più adatto.</div>
+      <div class="progress" id="progress"></div>
+    </div>
+  </div>
+</section>
+
+<section class="finish" id="finish">
+  <div class="kicker">Sistema ripristinato</div>
+  <h2>GERARCHIA CORRETTA — ARCHIVIO OPERATIVO</h2>
+  <p>La gerarchia delle memorie e le scelte di archiviazione sono state ricostruite correttamente.</p>
+  <div class="relic">⬟</div>
+  <strong>RELIQUIA RECUPERATA</strong>
+</section>
+
+</div>
+
+<script>
+(()=>{
+  const classe=(localStorage.getItem("museoInfo_classe")||"").trim().toUpperCase();
+  const modalita=(localStorage.getItem("museoInfo_modalita")||"").trim().toLowerCase();
+  const key=`museoInfo_${classe}_${modalita}_enigma10`;
+  const valid=!!classe&&["ripasso","consolidamento"].includes(modalita);
+
+  const modeEl=document.getElementById("mode");
+  const notice=document.getElementById("notice");
+  const phase1=document.getElementById("phase1");
+
+  modeEl.textContent="MODALITÀ "+(modalita?modalita.toUpperCase():"NON CONFIGURATA");
+
+  if(!valid){
+    notice.innerHTML="<strong>Sessione non configurata.</strong> Tornate alla configurazione.";
+    phase1.classList.add("hidden");
+    return;
+  }
+
+  notice.innerHTML = modalita==="consolidamento"
+    ? "<strong>CONSOLIDAMENTO.</strong> Prima ricostruite l'ordine delle memorie, poi applicate le caratteristiche dei supporti a situazioni concrete."
+    : "<strong>RIPASSO.</strong> Ricostruite la gerarchia e scegliete i supporti più adatti. Se necessario, consultate l'Archivio tecnico.";
+
+  document.getElementById("phase1desc").textContent =
+    modalita==="consolidamento"
+      ? "Partite dalla memoria più vicina e veloce rispetto alla CPU e procedete verso le memorie di massa."
+      : "Ricostruite la gerarchia delle memorie.";
+
+  // --- FASE 1
+  const correct=["REGISTRI","CACHE","RAM","SSD","HDD"];
+  const bank=document.getElementById("bank");
+  let dragged=null;
+  let selected=null;
+
+  document.querySelectorAll(".mem-card").forEach(card=>{
+    card.addEventListener("dragstart",()=>{
+      dragged=card;
+      card.classList.add("dragging");
+    });
+    card.addEventListener("dragend",()=>{
+      card.classList.remove("dragging");
+      dragged=null;
+    });
+    card.addEventListener("click",()=>{
+      selected=card;
+      document.querySelectorAll(".mem-card").forEach(c=>c.style.outline="");
+      card.style.outline="3px solid #5adfff";
+      document.getElementById("fb1").textContent="Elemento selezionato: "+card.dataset.mem+". Cliccate sulla posizione desiderata.";
+    });
+  });
+
+  document.querySelectorAll(".slot").forEach(slot=>{
+    slot.addEventListener("dragover",e=>{
+      e.preventDefault();
+      slot.classList.add("over");
+    });
+    slot.addEventListener("dragleave",()=>slot.classList.remove("over"));
+    slot.addEventListener("drop",e=>{
+      e.preventDefault();
+      slot.classList.remove("over");
+      if(dragged) placeCard(dragged,slot);
+    });
+    slot.addEventListener("click",e=>{
+      if(e.target.closest(".mem-card")) return;
+      if(selected) placeCard(selected,slot);
+    });
+  });
+
+  bank.addEventListener("dragover",e=>e.preventDefault());
+  bank.addEventListener("drop",e=>{
+    e.preventDefault();
+    if(dragged){
+      bank.appendChild(dragged);
+      dragged.style.outline="";
+      selected=null;
+      restoreSlotLabels();
+    }
+  });
+
+  function placeCard(card,slot){
+    const existing=slot.querySelector(".mem-card");
+    if(existing) bank.appendChild(existing);
+    slot.innerHTML=`<div class="slot-num">${Number(slot.dataset.slot)+1}</div>`;
+    slot.appendChild(card);
+    card.style.outline="";
+    selected=null;
+  }
+
+  function restoreSlotLabels(){
+    document.querySelectorAll(".slot").forEach(slot=>{
+      if(!slot.querySelector(".mem-card")){
+        slot.innerHTML=`<div class="slot-num">${Number(slot.dataset.slot)+1}</div><span>Posizione ${Number(slot.dataset.slot)+1}</span>`;
+      }
+    });
+  }
+
+  document.getElementById("resetHierarchy").onclick=()=>{
+    const cards=[...document.querySelectorAll(".mem-card")];
+    const originalOrder=["HDD","REGISTRI","SSD","CACHE","RAM"];
+    originalOrder.forEach(name=>{
+      const c=cards.find(x=>x.dataset.mem===name);
+      bank.appendChild(c);
+      c.style.outline="";
+    });
+    document.querySelectorAll(".slot").forEach(slot=>{
+      slot.innerHTML=`<div class="slot-num">${Number(slot.dataset.slot)+1}</div><span>Posizione ${Number(slot.dataset.slot)+1}</span>`;
+    });
+    const fb=document.getElementById("fb1");
+    fb.textContent="Ordine ripristinato.";
+    fb.className="feedback";
+  };
+
+  document.getElementById("verifyHierarchy").onclick=()=>{
+    const slots=[...document.querySelectorAll(".slot")];
+    const fb=document.getElementById("fb1");
+
+    if(slots.some(s=>!s.querySelector(".mem-card"))){
+      fb.textContent="Prima inserite tutti e cinque gli elementi.";
+      fb.className="feedback err";
+      return;
+    }
+
+    const values=slots.map(s=>s.querySelector(".mem-card").dataset.mem);
+    const wrong=values.filter((v,i)=>v!==correct[i]).length;
+
+    if(wrong){
+      fb.textContent=`La gerarchia contiene ${wrong} ${wrong===1?"elemento fuori posizione":"elementi fuori posizione"}. Correggete l'ordine e riprovate.`;
+      fb.className="feedback err";
+      return;
+    }
+
+    fb.textContent="Gerarchia corretta. La seconda fase è stata sbloccata.";
+    fb.className="feedback ok";
+    document.getElementById("phase2").classList.add("show");
+    document.getElementById("verifyHierarchy").disabled=true;
+    setTimeout(()=>document.getElementById("phase2").scrollIntoView({behavior:"smooth"}),250);
+  };
+
+  // --- FASE 2
+  const cases=[
+    {
+      text:"Il sistema operativo e i programmi della postazione principale del museo devono avviarsi rapidamente. I dati devono essere conservati anche dopo lo spegnimento.",
+      answer:"SSD"
+    },
+    {
+      text:"Il museo deve conservare migliaia di fotografie e documenti occupando molto spazio. La priorità è la capacità, non la massima velocità.",
+      answer:"HDD"
+    },
+    {
+      text:"Un tecnico deve portare una presentazione e alcuni file da un computer a un altro usando un dispositivo piccolo, riscrivibile e facilmente trasportabile.",
+      answer:"PENDRIVE"
+    },
+    {
+      text:"Una fotocamera digitale del museo deve salvare direttamente le fotografie su un supporto molto piccolo e rimovibile.",
+      answer:"SD"
+    },
+    {
+      text:"L'archivio storico contiene vecchio materiale multimediale distribuito su supporti ottici, da leggere tramite un apposito lettore.",
+      answer:"CDDVD"
+    }
+  ];
+
+  let current=0;
+  const caseStep=document.getElementById("caseStep");
+  const caseText=document.getElementById("caseText");
+  const fb2=document.getElementById("fb2");
+  const progress=document.getElementById("progress");
+  const choiceButtons=[...document.querySelectorAll(".choice")];
+
+  function renderCase(){
+    caseStep.textContent=`SITUAZIONE ${String(current+1).padStart(2,"0")} / ${String(cases.length).padStart(2,"0")}`;
+    caseText.textContent=cases[current].text;
+    fb2.textContent="Scegliete il supporto più adatto.";
+    fb2.className="feedback";
+    choiceButtons.forEach(b=>{
+      b.classList.remove("correct","wrong");
+      b.disabled=false;
+    });
+    progress.textContent=`Completate: ${current} di ${cases.length}`;
+  }
+
+  choiceButtons.forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      const choice=btn.dataset.choice;
+      if(choice===cases[current].answer){
+        btn.classList.add("correct");
+        fb2.textContent="Scelta corretta.";
+        fb2.className="feedback ok";
+        choiceButtons.forEach(b=>b.disabled=true);
+
+        setTimeout(()=>{
+          current++;
+          if(current<cases.length){
+            renderCase();
+          }else{
+            progress.textContent=`Completate: ${cases.length} di ${cases.length}`;
+            fb2.textContent="Tutte le situazioni sono state risolte correttamente.";
+            fb2.className="feedback ok";
+            localStorage.setItem(key,"true");
+            document.getElementById("finish").classList.add("show");
+            setTimeout(()=>document.getElementById("finish").scrollIntoView({behavior:"smooth"}),250);
+          }
+        },700);
+      }else{
+        btn.classList.add("wrong");
+        fb2.textContent="Questo supporto non è il più adatto alla situazione. Riprovate.";
+        fb2.className="feedback err";
+        setTimeout(()=>btn.classList.remove("wrong"),500);
+      }
+    });
+  });
+
+  renderCase();
+
+  if(["true","1","completato","completed","solved"].includes((localStorage.getItem(key)||"").toLowerCase())){
+    document.getElementById("phase2").classList.add("show");
+    document.getElementById("finish").classList.add("show");
+  }
+})();
+</script>
+</body>
+</html>
