@@ -1,0 +1,554 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Centrale Diagnostica — Galleria Reti</title>
+<style>
+:root{
+  --bg:#071018;--panel:#0c1924;--panel2:#102330;--line:#315166;
+  --cyan:#58ddff;--green:#5ee69e;--red:#ff7080;--yellow:#ffd36b;
+  --text:#edf9ff;--muted:#9fb6c3;--terminal:#02090d
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:Inter,Segoe UI,Arial,sans-serif;background:linear-gradient(180deg,#061018,#09151f 60%,#050b10);color:var(--text)}
+body{padding:14px}
+.wrap{max-width:1220px;margin:auto}
+.header{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;padding:18px 20px;border:1px solid var(--line);border-radius:16px;background:#0a1721}
+.kicker{font-size:12px;letter-spacing:.15em;color:var(--cyan);font-weight:900;text-transform:uppercase}
+h1{margin:5px 0;font-size:clamp(24px,3vw,38px)}
+.sub{color:var(--muted);line-height:1.45;max-width:870px}
+.badges{display:flex;gap:8px;flex-wrap:wrap}
+.badge{padding:8px 11px;border-radius:999px;border:1px solid #355c72;background:#0b1821;font-size:12px;font-weight:900}
+.notice{margin:14px 0;padding:13px 15px;border:1px solid #285069;border-radius:12px;background:#0a1721;line-height:1.45}
+.notice strong{color:var(--cyan)}
+
+.statusbar{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0}
+.groupstatus{border:1px solid #36596c;border-radius:12px;padding:11px 12px;background:#0b1720;text-align:center;font-weight:900}
+.groupstatus.active{outline:2px solid var(--yellow);color:var(--yellow)}
+.groupstatus.done{border-color:#3b8a61;background:#10271e;color:var(--green)}
+.groupstatus.waiting{color:#a9bac3}
+
+.panel{border:1px solid var(--line);border-radius:16px;background:var(--panel);overflow:hidden;margin-top:14px}
+.head{padding:14px 18px;border-bottom:1px solid var(--line);background:var(--panel2);font-weight:900}
+.body{padding:18px}
+.introgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.info{border:1px solid #33576c;border-radius:13px;padding:14px;background:#0a1620}
+.info h3{margin:0 0 8px;color:#c9f4ff}
+.info p{margin:0;color:var(--muted);line-height:1.5}
+.cmdguide{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}
+.guidecard{border:1px solid #365d72;border-radius:12px;padding:12px;background:#0d1d29}
+.guidecard b{display:block;color:var(--cyan);margin-bottom:6px}
+.guidecard span{color:var(--muted);font-size:13px;line-height:1.4}
+
+.casebox{display:grid;grid-template-columns:1.1fr .9fr;gap:14px}
+.scenario{border:1px solid #355a6f;border-radius:14px;background:#0a1721;padding:16px}
+.scenario h2{margin:4px 0 10px;font-size:23px}
+.scenario p{line-height:1.5}
+.hint{margin-top:12px;padding:11px 12px;border-left:4px solid var(--yellow);background:#1a1b12;color:#f6e8a8;border-radius:8px}
+.turnline{font-size:13px;color:#ffd36b;font-weight:900;letter-spacing:.07em}
+
+.terminal{background:var(--terminal);border:1px solid #264755;border-radius:14px;min-height:360px;display:flex;flex-direction:column;overflow:hidden}
+.termhead{padding:9px 12px;background:#0a2028;border-bottom:1px solid #244552;color:#9fdff0;font-size:12px;font-weight:900}
+.termout{padding:14px;white-space:pre-wrap;font-family:Consolas,Monaco,monospace;font-size:13px;line-height:1.45;overflow:auto;flex:1;color:#d9f4e7}
+
+.commands{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:14px}
+.cmdbox{border:1px solid #355b70;border-radius:12px;background:#0a1721;padding:10px}
+.cmdbox button{width:100%;border:0;border-radius:9px;padding:11px;background:#143346;color:#eafaff;font-weight:900;cursor:pointer}
+.cmdbox button:hover{background:#194257}
+.cmdbox small{display:block;color:var(--muted);line-height:1.35;margin-top:7px}
+.cmdbox button:disabled{opacity:.5;cursor:not-allowed}
+
+.diagnoses{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-top:12px}
+.diag{border:1px solid #3d6277;background:#102936;color:#e9f7fd;border-radius:10px;padding:11px;cursor:pointer;text-align:left;font-weight:800}
+.diag:hover{border-color:var(--cyan)}
+.diag.correct{border-color:#3f9468;background:#123526;color:#a8ffd0}
+.diag.wrong{border-color:#914553;background:#35171d;color:#ffadb7}
+
+.feedback{margin-top:14px;padding:12px 14px;min-height:48px;border:1px solid #2c4a5d;border-radius:11px;background:#071119;color:var(--muted)}
+.feedback.ok{color:var(--green);border-color:#347654}
+.feedback.err{color:#ff9fab;border-color:#743847}
+
+.finish{display:none;margin-top:18px;padding:22px;border:1px solid #418d69;border-radius:17px;background:linear-gradient(#0f2e24,#0a2119);text-align:center}
+.finish.show{display:block}
+.relics{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;margin-top:15px}
+.relic{width:74px;height:74px;border:1px solid #5ce6a0;border-radius:17px;background:#091d16;color:#a3ffd3;display:grid;place-items:center;font-size:40px}
+.hidden{display:none!important}
+
+@media(max-width:900px){
+  .header,.casebox{grid-template-columns:1fr;display:grid}
+  .introgrid,.cmdguide,.statusbar{grid-template-columns:1fr 1fr}
+}
+@media(max-width:620px){
+  .introgrid,.cmdguide,.statusbar,.commands,.diagnoses{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<section class="header">
+  <div>
+    <div class="kicker">Museo dell'Informatica // Galleria Reti</div>
+    <h1>CENTRALE DIAGNOSTICA DI RETE</h1>
+    <div class="sub">Quattro postazioni del museo presentano problemi diversi. Ogni gruppo deve individuare il proprio guasto usando soltanto gli strumenti di diagnostica disponibili.</div>
+  </div>
+  <div class="badges">
+    <div class="badge" id="mode">MODALITÀ —</div>
+    <div class="badge">4 GRUPPI</div>
+  </div>
+</section>
+
+<div class="notice" id="notice"></div>
+
+<div class="statusbar" id="statusbar"></div>
+
+<section class="panel">
+  <div class="head">GUIDA RAPIDA // TERMINALE E COMANDI</div>
+  <div class="body">
+    <div class="introgrid">
+      <div class="info">
+        <h3>Che cos'è il terminale?</h3>
+        <p>È un ambiente testuale che permette di comunicare con il computer attraverso comandi scritti. In questa attività viene utilizzato per controllare la rete e raccogliere indizi utili alla diagnosi.</p>
+      </div>
+      <div class="info">
+        <h3>Come si gioca?</h3>
+        <p>Il gruppo di turno può eseguire tutti i controlli che ritiene utili. Quando sceglie una diagnosi, se sbaglia, il turno passa al gruppo successivo ancora attivo. Chi risolve il proprio caso esce dal giro.</p>
+      </div>
+    </div>
+    <div class="cmdguide">
+      <div class="guidecard"><b>IPCONFIG</b><span>Controlla la configurazione di rete e l'indirizzo IP del computer.</span></div>
+      <div class="guidecard"><b>PING</b><span>Verifica se una determinata destinazione può essere raggiunta attraverso la rete.</span></div>
+      <div class="guidecard"><b>NSLOOKUP</b><span>Controlla quale indirizzo IP corrisponde a un nome di dominio.</span></div>
+      <div class="guidecard"><b>TRACERT</b><span>Mostra le tappe attraversate dai dati per raggiungere una destinazione.</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="panel" id="gamePanel">
+  <div class="head">POSTAZIONE ATTIVA</div>
+  <div class="body">
+    <div class="casebox">
+      <div class="scenario">
+        <div class="turnline" id="turnline"></div>
+        <h2 id="caseTitle"></h2>
+        <p id="caseText"></p>
+        <div class="hint" id="caseHint"></div>
+
+        <div class="commands" id="commands"></div>
+      </div>
+
+      <div class="terminal">
+        <div class="termhead">C:\MUSEO\RETE&gt; TERMINALE DIAGNOSTICO</div>
+        <div class="termout" id="termout"></div>
+      </div>
+    </div>
+
+    <div class="head" style="margin:18px -18px 0">SELEZIONATE LA DIAGNOSI</div>
+    <div class="diagnoses" id="diagnoses"></div>
+    <div class="feedback" id="feedback">Eseguite i controlli utili e scegliete una diagnosi.</div>
+  </div>
+</section>
+
+<section class="finish" id="finish">
+  <div class="kicker">Galleria Reti</div>
+  <h2>DIAGNOSTICA COMPLETATA</h2>
+  <p>Tutti i gruppi hanno individuato correttamente il proprio problema di rete.</p>
+  <div class="relics">
+    <div class="relic">⊙</div>
+    <div class="relic">◍</div>
+    <div class="relic">⎔</div>
+    <div class="relic">✥</div>
+    <div class="relic">⬣</div>
+  </div>
+  <p><strong>SETTORE RETI RIPRISTINATO</strong></p>
+</section>
+
+</div>
+
+<script>
+(()=>{
+  const classe=(localStorage.getItem("museoInfo_classe")||"").trim().toUpperCase();
+  const modalita=(localStorage.getItem("museoInfo_modalita")||"").trim().toLowerCase();
+  const valid=!!classe&&["ripasso","consolidamento"].includes(modalita);
+  const prefix=()=>`museoInfo_${classe}_${modalita}`;
+
+  const mode=document.getElementById("mode");
+  const notice=document.getElementById("notice");
+  const gamePanel=document.getElementById("gamePanel");
+  mode.textContent="MODALITÀ "+(modalita?modalita.toUpperCase():"NON CONFIGURATA");
+
+  if(!valid){
+    notice.innerHTML="<strong>Sessione non configurata.</strong> Tornate alla configurazione del museo.";
+    gamePanel.classList.add("hidden");
+    return;
+  }
+
+  notice.innerHTML = modalita==="consolidamento"
+    ? "<strong>CONSOLIDAMENTO.</strong> Utilizzate la guida dei comandi e gli indizi del terminale. Non serve conoscere altri comandi oltre a quelli mostrati."
+    : "<strong>RIPASSO.</strong> Utilizzate i comandi disponibili per raccogliere indizi. Se un concetto non è chiaro, consultate l'Archivio tecnico.";
+
+  // Mappatura dei gruppi ai vecchi numeri enigma, per mantenere compatibilità con il codificatore.
+  // G4 -> enigma12, G1 -> enigma13, G2 -> enigma14, G3 -> enigma15.
+  // Quando tutti e quattro hanno risolto, viene marcato anche enigma16 come completamento dell'intera Galleria Reti.
+  const groups = [
+    {
+      group:4, enigma:12, relic:"⊙",
+      title:"CASO 1 — IL SITO NON SI APRE",
+      text:"Il computer della biglietteria è collegato alla rete. Il personale riferisce che Internet sembra attivo, ma il sito del museo non viene aperto quando viene utilizzato il suo nome.",
+      hint:"INDIZIO: verificate se Internet è raggiungibile usando un indirizzo IP e poi controllate cosa accade quando viene utilizzato un nome.",
+      answer:"DNS",
+      commands:[
+        ["ipconfig","IPCONFIG","Controlla l'indirizzo IP di questo computer.",
+`C:\\MUSEO\\RETE> ipconfig
+
+Configurazione IP di Windows
+
+Indirizzo IPv4 . . . . . . : 192.168.1.24
+
+[DIAGNOSTICA]
+Il computer possiede un indirizzo IP di rete.`],
+        ["pingip","PING 8.8.8.8","Verifica se questo computer riesce a raggiungere un indirizzo IP su Internet.",
+`C:\\MUSEO\\RETE> ping 8.8.8.8
+
+Risposta da 8.8.8.8
+Risposta da 8.8.8.8
+Risposta da 8.8.8.8
+
+Pacchetti: Trasmessi = 3, Ricevuti = 3, Persi = 0
+
+[DIAGNOSTICA]
+La destinazione risponde: il computer riesce a comunicare attraverso Internet.`],
+        ["pingname","PING www.museoinformatica.it","Verifica se la destinazione è raggiungibile utilizzando il suo nome.",
+`C:\\MUSEO\\RETE> ping www.museoinformatica.it
+
+Impossibile trovare l'host www.museoinformatica.it.
+
+[DIAGNOSTICA]
+Il computer non riesce a utilizzare questo nome per raggiungere la destinazione.`],
+        ["nslookup","NSLOOKUP www.museoinformatica.it","Controlla quale indirizzo IP corrisponde al nome del sito.",
+`C:\\MUSEO\\RETE> nslookup www.museoinformatica.it
+
+*** Richiesta non riuscita
+*** Impossibile ottenere l'indirizzo IP associato al nome
+
+[DIAGNOSTICA]
+La traduzione del nome del sito nel relativo indirizzo IP non è riuscita.`]
+      ]
+    },
+    {
+      group:1, enigma:13, relic:"◍",
+      title:"CASO 2 — NESSUNA DESTINAZIONE INTERNET RISPONDE",
+      text:"Una postazione dell'area visitatori non riesce più ad accedere a Internet. Il computer sembra acceso e collegato normalmente. Sul modem/router del settore la spia INTERNET è spenta.",
+      hint:"INDIZIO: se nessuna destinazione Internet risponde, considerate anche il dispositivo che collega la rete del museo a Internet.",
+      answer:"ROUTER",
+      commands:[
+        ["ipconfig","IPCONFIG","Controlla l'indirizzo IP di questo computer.",
+`C:\\MUSEO\\RETE> ipconfig
+
+Configurazione IP di Windows
+
+Indirizzo IPv4 . . . . . . : 192.168.1.31
+
+[DIAGNOSTICA]
+Il computer possiede un indirizzo IP di rete.`],
+        ["pingip","PING 8.8.8.8","Verifica se questo computer raggiunge un indirizzo IP su Internet.",
+`C:\\MUSEO\\RETE> ping 8.8.8.8
+
+Richiesta scaduta.
+Richiesta scaduta.
+Richiesta scaduta.
+
+Pacchetti: Trasmessi = 3, Ricevuti = 0, Persi = 3
+
+[DIAGNOSTICA]
+Nessuna risposta dalla destinazione Internet.`],
+        ["pingname","PING www.museoinformatica.it","Verifica se una destinazione Internet risponde usando il suo nome.",
+`C:\\MUSEO\\RETE> ping www.museoinformatica.it
+
+Richiesta scaduta.
+Richiesta scaduta.
+Richiesta scaduta.
+
+[DIAGNOSTICA]
+Anche questa destinazione Internet non risponde.`],
+        ["nslookup","NSLOOKUP www.museoinformatica.it","Controlla la traduzione del nome del sito.",
+`C:\\MUSEO\\RETE> nslookup www.museoinformatica.it
+
+Server:  DNS-MUSEO
+Address: 192.168.1.5
+
+Nome:    www.museoinformatica.it
+Address: 203.0.113.25
+
+[DIAGNOSTICA]
+Il nome viene tradotto correttamente in un indirizzo IP.`]
+      ]
+    },
+    {
+      group:2, enigma:14, relic:"⎔",
+      title:"CASO 3 — UN SOLO SERVER NON RISPONDE",
+      text:"Dalla sala controllo quasi tutti i siti funzionano, ma il server remoto dell'archivio non è raggiungibile. Dovete capire se il problema riguarda tutta Internet oppure soltanto quella destinazione.",
+      hint:"INDIZIO: confrontate una destinazione funzionante con il server che presenta il problema.",
+      answer:"SERVER",
+      commands:[
+        ["pingok","PING 8.8.8.8","Verifica se Internet è raggiungibile attraverso un indirizzo IP noto.",
+`C:\\MUSEO\\RETE> ping 8.8.8.8
+
+Risposta da 8.8.8.8
+Risposta da 8.8.8.8
+Risposta da 8.8.8.8
+
+[DIAGNOSTICA]
+Internet è raggiungibile da questa postazione.`],
+        ["nslookup","NSLOOKUP server.museo.it","Controlla quale indirizzo IP corrisponde al server remoto.",
+`C:\\MUSEO\\RETE> nslookup server.museo.it
+
+Nome:    server.museo.it
+Address: 198.51.100.44
+
+[DIAGNOSTICA]
+Il nome del server viene tradotto correttamente nel suo indirizzo IP.`],
+        ["pingserver","PING server.museo.it","Verifica se il server remoto risponde.",
+`C:\\MUSEO\\RETE> ping server.museo.it
+
+Richiesta scaduta.
+Richiesta scaduta.
+Richiesta scaduta.
+
+[DIAGNOSTICA]
+Il server specifico non risponde, mentre Internet risulta funzionante.`],
+        ["tracert","TRACERT server.museo.it","Mostra le tappe attraversate dai dati diretti verso il server remoto.",
+`C:\\MUSEO\\RETE> tracert server.museo.it
+
+1   192.168.1.1
+2   10.24.8.1
+3   172.18.4.6
+4   *  *  *
+5   *  *  *
+
+[DIAGNOSTICA]
+Il percorso parte correttamente dalla rete del museo ma non arriva alla destinazione finale.`]
+      ]
+    },
+    {
+      group:3, enigma:15, relic:"✥",
+      title:"CASO 4 — POSTAZIONE ISOLATA",
+      text:"Il computer del punto informazioni non riesce a comunicare con nessuna risorsa di rete. Sul monitor compare l'avviso di sistema: «Cavo di rete scollegato».",
+      hint:"INDIZIO: prima di cercare un guasto su Internet, verificate se il computer è effettivamente collegato alla rete.",
+      answer:"DISCONNECTED",
+      commands:[
+        ["ipconfig","IPCONFIG","Controlla la configurazione di rete e l'indirizzo IP del computer.",
+`C:\\MUSEO\\RETE> ipconfig
+
+Scheda Ethernet:
+Supporto disconnesso
+
+[DIAGNOSTICA]
+Il computer non risulta collegato alla rete tramite questa interfaccia.`],
+        ["pingip","PING 8.8.8.8","Verifica se il computer riesce a raggiungere una destinazione Internet.",
+`C:\\MUSEO\\RETE> ping 8.8.8.8
+
+Errore generale.
+Impossibile inviare la richiesta.
+
+[DIAGNOSTICA]
+La comunicazione non può partire da questa postazione.`],
+        ["pingname","PING www.museoinformatica.it","Verifica se il computer riesce a raggiungere una destinazione usando il suo nome.",
+`C:\\MUSEO\\RETE> ping www.museoinformatica.it
+
+Impossibile inviare la richiesta.
+
+[DIAGNOSTICA]
+La postazione non riesce a comunicare con la rete.`],
+        ["nslookup","NSLOOKUP www.museoinformatica.it","Prova a chiedere l'indirizzo IP associato al nome del sito.",
+`C:\\MUSEO\\RETE> nslookup www.museoinformatica.it
+
+*** Impossibile raggiungere il servizio di risoluzione nomi
+
+[DIAGNOSTICA]
+Il computer non riesce nemmeno a inviare la richiesta attraverso la rete.`]
+      ]
+    }
+  ];
+
+  const diagnoses = [
+    ["DNS","Problema DNS"],
+    ["ROUTER","Modem/router non raggiungibile"],
+    ["BADIP","Configurazione IP errata"],
+    ["SERVER","Server remoto non raggiungibile"],
+    ["PATH","Problema lungo il percorso di rete"],
+    ["DISCONNECTED","Computer non collegato alla rete"],
+    ["OK","Connessione Internet funzionante"],
+    ["BADNAME","Nome del sito errato"],
+    ["BADSERVERIP","Indirizzo IP del server errato"],
+    ["NOPROBLEM","Nessun problema di rete"]
+  ];
+
+  // Stato persistente per gruppo
+  const solved = {};
+  groups.forEach(g=>{
+    const val=(localStorage.getItem(`${prefix()}_enigma${String(g.enigma).padStart(2,"0")}`)||"").toLowerCase();
+    solved[g.group]=["true","1","completato","completed","solved"].includes(val);
+  });
+
+  // Turno persistente opzionale
+  const turnKey=`${prefix()}_rete_turno`;
+  let currentGroup=parseInt(localStorage.getItem(turnKey)||"4",10);
+  if(![1,2,3,4].includes(currentGroup)) currentGroup=4;
+
+  function activeGroups(){
+    return [4,1,2,3].filter(g=>!solved[g]);
+  }
+
+  function normalizeTurn(){
+    const active=activeGroups();
+    if(!active.length) return;
+    if(!active.includes(currentGroup)) currentGroup=active[0];
+    localStorage.setItem(turnKey,String(currentGroup));
+  }
+
+  function nextActiveGroup(after){
+    const order=[4,1,2,3];
+    const active=activeGroups();
+    if(!active.length) return null;
+    let idx=order.indexOf(after);
+    for(let i=1;i<=order.length;i++){
+      const candidate=order[(idx+i)%order.length];
+      if(active.includes(candidate)) return candidate;
+    }
+    return active[0];
+  }
+
+  function currentCase(){
+    return groups.find(g=>g.group===currentGroup);
+  }
+
+  function renderStatus(){
+    const sb=document.getElementById("statusbar");
+    sb.innerHTML="";
+    [1,2,3,4].forEach(g=>{
+      const d=document.createElement("div");
+      d.className="groupstatus "+(solved[g]?"done":(g===currentGroup?"active":"waiting"));
+      d.textContent=solved[g]?`GRUPPO ${g} ✓ COMPLETATO`:(g===currentGroup?`GRUPPO ${g} — TURNO`:`GRUPPO ${g} — IN ATTESA`);
+      sb.appendChild(d);
+    });
+  }
+
+  function renderCase(){
+    normalizeTurn();
+    renderStatus();
+
+    if(activeGroups().length===0){
+      completeGallery();
+      return;
+    }
+
+    const c=currentCase();
+    document.getElementById("turnline").textContent=`TURNO DEL GRUPPO ${c.group} // ENIGMA ${String(c.enigma).padStart(2,"0")}`;
+    document.getElementById("caseTitle").textContent=c.title;
+    document.getElementById("caseText").textContent=c.text;
+    document.getElementById("caseHint").textContent=c.hint;
+    document.getElementById("termout").textContent=
+`SISTEMA DI DIAGNOSTICA DEL MUSEO
+
+Postazione assegnata al GRUPPO ${c.group}.
+
+Leggete il problema, scegliete i controlli utili e osservate gli indizi restituiti dal terminale.
+
+C:\\MUSEO\\RETE>`;
+
+    const cmds=document.getElementById("commands");
+    cmds.innerHTML="";
+    c.commands.forEach(([id,label,desc,out])=>{
+      const box=document.createElement("div");
+      box.className="cmdbox";
+      const b=document.createElement("button");
+      b.textContent=label;
+      b.onclick=()=>{
+        document.getElementById("termout").textContent=out;
+      };
+      const s=document.createElement("small");
+      s.textContent=desc;
+      box.appendChild(b);
+      box.appendChild(s);
+      cmds.appendChild(box);
+    });
+
+    const dg=document.getElementById("diagnoses");
+    dg.innerHTML="";
+    diagnoses.forEach(([value,label])=>{
+      const b=document.createElement("button");
+      b.className="diag";
+      b.textContent=label;
+      b.onclick=()=>answer(value,b);
+      dg.appendChild(b);
+    });
+
+    const fb=document.getElementById("feedback");
+    fb.textContent="Eseguite i controlli utili e scegliete una diagnosi.";
+    fb.className="feedback";
+  }
+
+  function answer(value,button){
+    const c=currentCase();
+    const fb=document.getElementById("feedback");
+    document.querySelectorAll(".diag").forEach(b=>b.disabled=true);
+
+    if(value===c.answer){
+      button.classList.add("correct");
+      solved[c.group]=true;
+      localStorage.setItem(`${prefix()}_enigma${String(c.enigma).padStart(2,"0")}`,"true");
+      localStorage.setItem(`${prefix()}_rete_gruppo${c.group}`,"true");
+
+      fb.textContent=`DIAGNOSI CORRETTA. Il Gruppo ${c.group} ha completato il proprio caso ed esce dal giro.`;
+      fb.className="feedback ok";
+
+      const next=nextActiveGroup(c.group);
+      if(next!==null){
+        currentGroup=next;
+        localStorage.setItem(turnKey,String(currentGroup));
+        setTimeout(renderCase,1200);
+      }else{
+        setTimeout(completeGallery,900);
+      }
+    }else{
+      button.classList.add("wrong");
+      const next=nextActiveGroup(c.group);
+
+      if(next===null){
+        document.querySelectorAll(".diag").forEach(b=>b.disabled=false);
+        return;
+      }
+
+      fb.textContent=`DIAGNOSI ERRATA. Il controllo passa al Gruppo ${next}, che non ha ancora risolto il proprio caso.`;
+      fb.className="feedback err";
+      currentGroup=next;
+      localStorage.setItem(turnKey,String(currentGroup));
+      setTimeout(renderCase,1200);
+    }
+  }
+
+  function completeGallery(){
+    // Mantiene il vecchio sistema a 16 enigmi: il 16 segnala il completamento dell'intera Galleria Reti.
+    localStorage.setItem(`${prefix()}_enigma16`,"true");
+    localStorage.setItem(`${prefix()}_rete_completata`,"true");
+    document.getElementById("gamePanel").classList.add("hidden");
+    document.getElementById("finish").classList.add("show");
+    renderStatus();
+  }
+
+  // Se già completata
+  if((localStorage.getItem(`${prefix()}_rete_completata`)||"").toLowerCase()==="true" ||
+     activeGroups().length===0){
+    completeGallery();
+  }else{
+    renderCase();
+  }
+
+  // Aggiornamento se un'altra scheda modifica lo stato
+  window.addEventListener("storage",()=>location.reload());
+})();
+</script>
+</body>
+</html>
