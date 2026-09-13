@@ -152,19 +152,32 @@ function first(keys,fallback){
   return fallback;
 }
 
-const rawMode=first(["museoInfo_mode","museoInfo_modalita","museoInfo_modeSelected","mode"],"CONSOLIDAMENTO");
-const mode=String(rawMode).toUpperCase().includes("RIPASSO")?"RIPASSO":"CONSOLIDAMENTO";
-const classe=String(first(["museoInfo_class","museoInfo_classe","museoInfo_classSelected","classe"],"DEMO")).trim()||"DEMO";
-const scope=(classe+"_"+mode).replace(/\s+/g,"_");
+/* ============================================================
+   SESSIONE DEL MUSEO
+   Deve usare ESATTAMENTE le stesse chiavi di configurazione,
+   Codificatore e Maxischermo.
+   ============================================================ */
 
-const completionKeys=[
-  `museoInfo_${scope}_puzzle_01`,
-  `museoInfo_${scope}_enigma01`,
-  `museoInfo_${scope}_stazione01`
-];
+const classe = (storage.get("museoInfo_classe") || "").trim().toUpperCase();
+const modalita = (storage.get("museoInfo_modalita") || "").trim().toLowerCase();
 
-document.getElementById("modeTag").textContent="MODALITÀ: "+mode;
-document.getElementById("classTag").textContent="CLASSE: "+classe;
+const validSession =
+  !!classe && ["ripasso","consolidamento"].includes(modalita);
+
+function prefix(){
+  return `museoInfo_${classe}_${modalita}`;
+}
+
+/* Questa è la chiave esatta letta da Codificatore e Maxischermo. */
+const completionKey = `${prefix()}_enigma01`;
+
+const modeLabel =
+  modalita === "ripasso" ? "RIPASSO" :
+  modalita === "consolidamento" ? "CONSOLIDAMENTO" :
+  "NON CONFIGURATA";
+
+document.getElementById("modeTag").textContent="MODALITÀ: "+modeLabel;
+document.getElementById("classTag").textContent="CLASSE: "+(classe || "—");
 
 const targets=[5,11,18,21];
 const weights=[16,8,4,2,1];
@@ -175,7 +188,7 @@ const selected=targets.map(()=>new Set());
 const instructions=document.getElementById("instructions");
 const help=document.getElementById("help");
 
-if(mode==="CONSOLIDAMENTO"){
+if(modalita==="consolidamento"){
   instructions.innerHTML=`La macchina deve ricostruire quattro numeri decimali.
   <strong>Attiva le posizioni necessarie</strong>: quando una posizione viene attivata compare un <b>1</b>.
   La somma dei valori selezionati appare sotto. Quando pensi di aver costruito il numero richiesto, premi <strong>VERIFICA</strong>.`;
@@ -293,12 +306,19 @@ targets.forEach((_,idx)=>{
 });
 
 function alreadyComplete(){
-  return completionKeys.some(k=>storage.get(k)==="1");
+  const v=(storage.get(completionKey) || "").toLowerCase();
+  return ["true","1","completato","completed","solved"].includes(v);
 }
+
 function complete(){
-  completionKeys.forEach(k=>storage.set(k,"1"));
-  storage.set(`museoInfo_${scope}_relic_01`,"◈");
-  storage.set(`museoInfo_${scope}_puzzle_01_group`,"1");
+  if(!validSession){
+    alert("Configurazione non rilevata. Apri prima la pagina di configurazione del museo.");
+    return;
+  }
+
+  /* Valore e chiave coincidono esattamente con quelli letti
+     da codificatore.html e maxischermo.html. */
+  storage.set(completionKey,"true");
 
   document.getElementById("lamp").style.background="var(--green)";
   document.getElementById("lamp").style.boxShadow="0 0 14px var(--green)";
@@ -306,7 +326,16 @@ function complete(){
   document.getElementById("overlay").classList.add("show");
 
   try{
-    window.dispatchEvent(new CustomEvent("museoInfoPuzzleCompleted",{detail:{puzzle:1,group:1,classe,mode,relic:"◈"}}));
+    window.dispatchEvent(new CustomEvent("museoInfoPuzzleCompleted",{
+      detail:{
+        puzzle:1,
+        group:1,
+        classe:classe,
+        modalita:modalita,
+        relic:"◈",
+        key:completionKey
+      }
+    }));
   }catch(e){}
 }
 
