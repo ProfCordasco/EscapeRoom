@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Enigma 07 — Dentro la CPU</title>
+<style>
+:root{
+  --bg:#071018;--panel:#0c1a25;--line:#315064;
+  --cyan:#5adfff;--green:#63e6a7;--red:#ff7182;
+  --text:#eef9ff;--muted:#9fb3c0;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:Inter,Segoe UI,Arial,sans-serif;background:
+linear-gradient(180deg,#061018,#0a151f 60%,#050b10);color:var(--text)}
+body{padding:14px}
+.wrap{max-width:1100px;margin:auto}
+.header{
+  display:flex;justify-content:space-between;gap:18px;align-items:flex-start;
+  padding:18px 20px;border:1px solid var(--line);border-radius:16px;background:#0a1721
+}
+.kicker{font-size:12px;letter-spacing:.15em;color:var(--cyan);font-weight:900;text-transform:uppercase}
+h1{margin:5px 0 5px;font-size:clamp(24px,3vw,38px)}
+.sub{color:var(--muted);line-height:1.45;max-width:780px}
+.badges{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.badge{padding:8px 11px;border-radius:999px;border:1px solid #355c72;background:#0b1821;font-size:12px;font-weight:900}
+.notice{
+  margin:14px 0;padding:13px 15px;border:1px solid #285069;border-radius:12px;
+  background:#0a1721;line-height:1.45
+}
+.notice strong{color:var(--cyan)}
+.panel{border:1px solid var(--line);border-radius:16px;background:#0b1823;overflow:hidden}
+.panelHead{padding:14px 18px;border-bottom:1px solid var(--line);background:#102330;font-weight:900}
+.panelBody{padding:18px}
+.task{
+  border:1px solid #2e5065;border-radius:14px;background:#08141d;padding:15px;margin-bottom:16px
+}
+.taskTitle{font-weight:900;color:var(--cyan);margin-bottom:8px}
+.instruction{
+  display:inline-block;padding:10px 14px;border:1px solid #3e6073;border-radius:10px;
+  background:#101f29;font-family:Consolas,monospace;font-size:19px;font-weight:900
+}
+.sourceTitle{margin:18px 0 10px;font-size:14px;color:#b9d2df;font-weight:900}
+.sourceRow{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.source{
+  border:1px solid #3b6378;border-radius:13px;background:linear-gradient(#163043,#102532);
+  padding:15px;text-align:center;cursor:grab;user-select:none
+}
+.source:active{cursor:grabbing}
+.source.dragging{opacity:.45}
+.source .name{font-size:22px;font-weight:950}
+.source .desc{margin-top:6px;font-size:12px;color:#aec1cc;line-height:1.35}
+.timeline{
+  margin-top:18px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px
+}
+.slot{
+  min-height:142px;border:2px dashed #365b70;border-radius:14px;background:#071119;
+  padding:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center
+}
+.slot.over{border-color:var(--cyan);background:#0b202c}
+.slotNum{
+  width:30px;height:30px;border-radius:50%;display:grid;place-items:center;
+  background:#183243;border:1px solid #41697f;font-size:13px;font-weight:900;margin-bottom:8px
+}
+.slot .placed{
+  width:100%;border:1px solid #4a7085;border-radius:10px;padding:12px 8px;
+  background:#122b3a;font-size:18px;font-weight:950
+}
+.slot .empty{color:#607988;font-size:13px}
+.controls{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+button{
+  border:0;border-radius:10px;padding:12px 18px;font-weight:900;cursor:pointer
+}
+.verify{background:linear-gradient(#7cecff,#4acbe9);color:#041217}
+.reset{background:#1a2b36;color:#d9e8ef;border:1px solid #3b596a}
+.feedback{
+  margin-top:14px;min-height:48px;border-radius:11px;padding:12px 14px;
+  border:1px solid #2c4a5d;background:#071119;color:var(--muted)
+}
+.feedback.ok{color:var(--green);border-color:#347654}
+.feedback.err{color:#ff9fab;border-color:#743847}
+.execution{
+  display:none;margin-top:18px;border:1px solid #3b6074;border-radius:14px;background:#07141d;padding:16px
+}
+.execution.show{display:block}
+.step{
+  display:none;margin:8px 0;padding:10px 12px;border-radius:9px;background:#0d202b;border-left:4px solid var(--cyan)
+}
+.step.show{display:block}
+.finish{
+  display:none;margin-top:18px;padding:22px;border:1px solid #418d69;border-radius:17px;
+  background:linear-gradient(#0f2e24,#0a2119);text-align:center
+}
+.finish.show{display:block}
+.relic{
+  width:96px;height:96px;margin:15px auto 9px;border:1px solid #5ce6a0;border-radius:21px;
+  background:#091d16;color:#a3ffd3;display:grid;place-items:center;font-size:56px
+}
+.hidden{display:none!important}
+@media(max-width:800px){
+  .header{flex-direction:column}.badges{justify-content:flex-start}
+  .sourceRow{grid-template-columns:1fr}
+  .timeline{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <section class="header">
+    <div>
+      <div class="kicker">Museo dell'Informatica // Galleria Hardware</div>
+      <h1>ENIGMA 07 — DENTRO LA CPU</h1>
+      <div class="sub">Ricostruite il percorso di un'istruzione all'interno del processore usando CU, registri e ALU.</div>
+    </div>
+    <div class="badges">
+      <div class="badge">GRUPPO 3</div>
+      <div class="badge" id="modeBadge">MODALITÀ —</div>
+    </div>
+  </section>
+
+  <div class="notice" id="modeNotice"></div>
+
+  <section class="panel" id="mainPanel">
+    <div class="panelHead">POSTAZIONE 07 // FLUSSO DI ELABORAZIONE</div>
+    <div class="panelBody">
+
+      <div class="task">
+        <div class="taskTitle">ISTRUZIONE DA ESEGUIRE</div>
+        <div class="instruction">8 + 4</div>
+      </div>
+
+      <div class="sourceTitle">COMPONENTI DISPONIBILI — possono essere usati più volte</div>
+      <div class="sourceRow">
+        <div class="source" draggable="true" data-type="CU">
+          <div class="name">CU</div>
+          <div class="desc">Unità di controllo</div>
+        </div>
+        <div class="source" draggable="true" data-type="REGISTRI">
+          <div class="name">REGISTRI</div>
+          <div class="desc">Memoria interna velocissima della CPU</div>
+        </div>
+        <div class="source" draggable="true" data-type="ALU">
+          <div class="name">ALU</div>
+          <div class="desc">Unità aritmetico-logica</div>
+        </div>
+      </div>
+
+      <div class="sourceTitle">TRASCINATE I COMPONENTI NELLE 4 FASI CORRETTE</div>
+      <div class="timeline">
+        <div class="slot" data-slot="0">
+          <div class="slotNum">1</div>
+          <div class="empty">Prima fase</div>
+        </div>
+        <div class="slot" data-slot="1">
+          <div class="slotNum">2</div>
+          <div class="empty">Seconda fase</div>
+        </div>
+        <div class="slot" data-slot="2">
+          <div class="slotNum">3</div>
+          <div class="empty">Terza fase</div>
+        </div>
+        <div class="slot" data-slot="3">
+          <div class="slotNum">4</div>
+          <div class="empty">Quarta fase</div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button class="verify" id="verifyBtn">VERIFICA SEQUENZA</button>
+        <button class="reset" id="resetBtn">SVUOTA SEQUENZA</button>
+      </div>
+
+      <div class="feedback" id="feedback">Completate le quattro fasi.</div>
+
+      <div class="execution" id="execution">
+        <div class="taskTitle">ESECUZIONE DELL'ISTRUZIONE</div>
+        <div class="step" id="s1"><strong>1. CU</strong> — istruzione ricevuta e decodificata.</div>
+        <div class="step" id="s2"><strong>2. REGISTRI</strong> — operandi disponibili: <strong>8</strong> e <strong>4</strong>.</div>
+        <div class="step" id="s3"><strong>3. ALU</strong> — calcolo eseguito: <strong>8 + 4</strong>.</div>
+        <div class="step" id="s4"><strong>4. REGISTRI</strong> — risultato temporaneo memorizzato: <strong>12</strong>.</div>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="finish" id="finish">
+    <div class="kicker">Postazione completata</div>
+    <h2>PROCESSORE OPERATIVO</h2>
+    <p>Il percorso dell'istruzione è stato ricostruito correttamente.</p>
+    <div class="relic">⟡</div>
+    <strong>RELIQUIA RECUPERATA</strong>
+    <div style="margin-top:8px;color:var(--muted);font-size:12px">Il Codificatore ha registrato il completamento dell'enigma.</div>
+  </section>
+
+</div>
+
+<script>
+(() => {
+  const classe=(localStorage.getItem("museoInfo_classe")||"").trim().toUpperCase();
+  const modalita=(localStorage.getItem("museoInfo_modalita")||"").trim().toLowerCase();
+  const solvedKey=`museoInfo_${classe}_${modalita}_enigma07`;
+  const validSession=!!classe && ["ripasso","consolidamento"].includes(modalita);
+
+  const modeBadge=document.getElementById("modeBadge");
+  const modeNotice=document.getElementById("modeNotice");
+  const mainPanel=document.getElementById("mainPanel");
+
+  modeBadge.textContent="MODALITÀ "+(modalita?modalita.toUpperCase():"NON CONFIGURATA");
+
+  if(!validSession){
+    modeNotice.innerHTML="<strong>Sessione non configurata.</strong> Tornate alla configurazione del museo.";
+    mainPanel.classList.add("hidden");
+    return;
+  }
+
+  modeNotice.innerHTML =
+    modalita==="consolidamento"
+      ? "<strong>CONSOLIDAMENTO.</strong> Seguite il percorso logico: chi interpreta l'istruzione, dove si trovano i dati, chi calcola e dove viene conservato il risultato?"
+      : "<strong>RIPASSO.</strong> Ricostruite il percorso dell'istruzione. Se necessario, consultate l'Archivio tecnico.";
+
+  const correct=["CU","REGISTRI","ALU","REGISTRI"];
+  const slots=[...document.querySelectorAll(".slot")];
+  let draggedType=null;
+
+  document.querySelectorAll(".source").forEach(src=>{
+    src.addEventListener("dragstart",()=>{
+      draggedType=src.dataset.type;
+      src.classList.add("dragging");
+    });
+    src.addEventListener("dragend",()=>{
+      src.classList.remove("dragging");
+      draggedType=null;
+    });
+
+    // Fallback click: select component, then click a slot.
+    src.addEventListener("click",()=>{
+      document.querySelectorAll(".source").forEach(x=>x.style.outline="");
+      draggedType=src.dataset.type;
+      src.style.outline="3px solid #5adfff";
+      document.getElementById("feedback").textContent=`${draggedType} selezionato. Cliccate su uno dei quattro blocchi vuoti.`;
+      document.getElementById("feedback").className="feedback";
+    });
+  });
+
+  function fillSlot(slot,type){
+    slot.dataset.value=type;
+    slot.querySelectorAll(".placed,.empty").forEach(x=>x.remove());
+    const d=document.createElement("div");
+    d.className="placed";
+    d.textContent=type;
+    slot.appendChild(d);
+    document.querySelectorAll(".source").forEach(x=>x.style.outline="");
+  }
+
+  slots.forEach(slot=>{
+    slot.addEventListener("dragover",e=>{e.preventDefault();slot.classList.add("over")});
+    slot.addEventListener("dragleave",()=>slot.classList.remove("over"));
+    slot.addEventListener("drop",e=>{
+      e.preventDefault();
+      slot.classList.remove("over");
+      if(draggedType) fillSlot(slot,draggedType);
+    });
+    slot.addEventListener("click",()=>{
+      if(draggedType) fillSlot(slot,draggedType);
+    });
+  });
+
+  document.getElementById("resetBtn").addEventListener("click",()=>{
+    slots.forEach((slot,i)=>{
+      slot.dataset.value="";
+      slot.querySelectorAll(".placed,.empty").forEach(x=>x.remove());
+      const empty=document.createElement("div");
+      empty.className="empty";
+      empty.textContent=["Prima fase","Seconda fase","Terza fase","Quarta fase"][i];
+      slot.appendChild(empty);
+    });
+    document.querySelectorAll(".source").forEach(x=>x.style.outline="");
+    draggedType=null;
+    document.getElementById("execution").classList.remove("show");
+    document.querySelectorAll(".step").forEach(x=>x.classList.remove("show"));
+    const fb=document.getElementById("feedback");
+    fb.textContent="Sequenza svuotata. Potete ricominciare.";
+    fb.className="feedback";
+  });
+
+  document.getElementById("verifyBtn").addEventListener("click",()=>{
+    const values=slots.map(s=>s.dataset.value||"");
+    const fb=document.getElementById("feedback");
+
+    if(values.some(v=>!v)){
+      fb.textContent="Completate tutti e quattro i blocchi prima della verifica.";
+      fb.className="feedback err";
+      return;
+    }
+
+    const ok=values.every((v,i)=>v===correct[i]);
+    if(!ok){
+      fb.textContent="La sequenza non è corretta. Spostate i componenti e riprovate.";
+      fb.className="feedback err";
+      return;
+    }
+
+    fb.textContent="Sequenza corretta. Avvio dell'esecuzione...";
+    fb.className="feedback ok";
+
+    const ex=document.getElementById("execution");
+    ex.classList.add("show");
+
+    ["s1","s2","s3","s4"].forEach((id,i)=>{
+      setTimeout(()=>document.getElementById(id).classList.add("show"),450+i*550);
+    });
+
+    setTimeout(()=>{
+      localStorage.setItem(solvedKey,"true");
+      document.getElementById("finish").classList.add("show");
+      document.getElementById("verifyBtn").disabled=true;
+      document.getElementById("finish").scrollIntoView({behavior:"smooth",block:"center"});
+    },2850);
+  });
+
+  const existing=(localStorage.getItem(solvedKey)||"").toLowerCase();
+  if(["true","1","completato","completed","solved"].includes(existing)){
+    document.getElementById("finish").classList.add("show");
+  }
+})();
+</script>
+</body>
+</html>
