@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Enigma 08 — Assegnazione postazioni</title>
+<style>
+:root{--bg:#071018;--panel:#0b1823;--line:#315064;--cyan:#5adfff;--green:#63e6a7;--red:#ff7182;--text:#eef9ff;--muted:#9fb3c0}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:Inter,Segoe UI,Arial,sans-serif;background:linear-gradient(180deg,#061018,#0a151f 60%,#050b10);color:var(--text)}
+body{padding:14px}.wrap{max-width:1180px;margin:auto}
+.header{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;padding:18px 20px;border:1px solid var(--line);border-radius:16px;background:#0a1721}
+.kicker{font-size:12px;letter-spacing:.15em;color:var(--cyan);font-weight:900;text-transform:uppercase}
+h1{margin:5px 0;font-size:clamp(24px,3vw,38px)}.sub{color:var(--muted);line-height:1.45;max-width:780px}
+.badges{display:flex;gap:8px;flex-wrap:wrap}.badge{padding:8px 11px;border-radius:999px;border:1px solid #355c72;background:#0b1821;font-size:12px;font-weight:900}
+.notice{margin:14px 0;padding:13px 15px;border:1px solid #285069;border-radius:12px;background:#0a1721;line-height:1.45}.notice strong{color:var(--cyan)}
+.panel{border:1px solid var(--line);border-radius:16px;background:var(--panel);overflow:hidden}.head{padding:14px 18px;border-bottom:1px solid var(--line);background:#102330;font-weight:900}.body{padding:18px}
+.pcGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:11px}
+.pc{border:1px solid #3b6378;border-radius:13px;background:linear-gradient(#163043,#102532);padding:13px;cursor:grab;user-select:none}
+.pc.dragging{opacity:.45}.pc h3{margin:0 0 7px;color:#bcefff}.pc ul{margin:0;padding-left:18px;font-size:13px;line-height:1.55;color:#d1e0e7}
+.hint{margin-top:12px;padding:10px 12px;border-radius:10px;background:#09141d;border:1px solid #29495c;color:#b8cad4;font-size:13px}
+.offices{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:17px}
+.office{border:1px solid #34576c;border-radius:14px;background:#091721;padding:14px}
+.office h3{margin:0 0 8px}.office p{color:#bfd0da;line-height:1.45;margin:0 0 12px;font-size:14px}
+.drop{min-height:62px;border:2px dashed #3b6075;border-radius:11px;display:grid;place-items:center;padding:8px;color:#66808f}
+.drop.over{border-color:var(--cyan);background:#0c222e}.assigned{width:100%;padding:11px;border-radius:9px;background:#153243;border:1px solid #4a7085;text-align:center;font-weight:900;color:#dff7ff}
+.controls{display:flex;gap:10px;justify-content:center;margin-top:18px;flex-wrap:wrap}
+button{border:0;border-radius:10px;padding:12px 18px;font-weight:900;cursor:pointer}.verify{background:linear-gradient(#7cecff,#4acbe9);color:#041217}.reset{background:#1a2b36;color:#d9e8ef;border:1px solid #3b596a}
+.feedback{margin-top:14px;padding:12px 14px;min-height:48px;border:1px solid #2c4a5d;border-radius:11px;background:#071119;color:var(--muted)}
+.feedback.ok{color:var(--green);border-color:#347654}.feedback.err{color:#ff9fab;border-color:#743847}
+.finish{display:none;margin-top:18px;padding:22px;border:1px solid #418d69;border-radius:17px;background:linear-gradient(#0f2e24,#0a2119);text-align:center}.finish.show{display:block}
+.relic{width:96px;height:96px;margin:15px auto 9px;border:1px solid #5ce6a0;border-radius:21px;background:#091d16;color:#a3ffd3;display:grid;place-items:center;font-size:56px}
+.hidden{display:none!important}
+@media(max-width:900px){.pcGrid{grid-template-columns:1fr 1fr}.offices{grid-template-columns:1fr}.header{flex-direction:column}}
+</style>
+</head>
+<body><div class="wrap">
+<section class="header"><div><div class="kicker">Museo dell'Informatica // Galleria Hardware</div><h1>ENIGMA 08 — POSTAZIONI DA ASSEGNARE</h1><div class="sub">Quattro configurazioni sono disponibili. Scegliete il computer più adatto alle esigenze di ciascun ufficio.</div></div><div class="badges"><div class="badge">GRUPPO 4</div><div class="badge" id="mode">MODALITÀ —</div></div></section>
+<div class="notice" id="notice"></div>
+<section class="panel" id="panel"><div class="head">UFFICIO ACQUISTI // CONFIGURAZIONE POSTAZIONI</div><div class="body">
+<div class="pcGrid" id="pcs">
+<div class="pc" draggable="true" data-pc="A"><h3>PC A — OFFICE BASIC</h3><ul><li>CPU: 2 core · 2,4 GHz</li><li>RAM: 8 GB</li><li>SSD: 256 GB</li><li>Grafica integrata</li></ul></div>
+<div class="pc" draggable="true" data-pc="B"><h3>PC B — OFFICE PLUS</h3><ul><li>CPU: 4 core · 3,2 GHz</li><li>RAM: 16 GB</li><li>SSD: 512 GB</li><li>Grafica integrata</li></ul></div>
+<div class="pc" draggable="true" data-pc="C"><h3>PC C — MULTITASKING PRO</h3><ul><li>CPU: 8 core · 2,8 GHz</li><li>RAM: 32 GB</li><li>SSD: 1 TB</li><li>Grafica integrata</li></ul></div>
+<div class="pc" draggable="true" data-pc="D"><h3>PC D — GRAPHIC WORKSTATION</h3><ul><li>CPU: 6 core · 3,6 GHz</li><li>RAM: 32 GB</li><li>SSD: 1 TB</li><li>Scheda grafica dedicata</li></ul></div>
+</div>
+<div class="hint" id="hint"></div>
+
+<!-- volutamente NON in ordine A-B-C-D -->
+<div class="offices">
+<div class="office" data-answer="D"><h3>UFFICIO COMUNICAZIONE E GRAFICA</h3><p>Realizza materiale pubblicitario, modifica fotografie e produce brevi video con applicazioni grafiche che possono sfruttare una scheda video dedicata.</p><div class="drop">Trascinate qui il PC scelto</div></div>
+<div class="office" data-answer="A"><h3>RECEPTION E ACCOGLIENZA</h3><p>Consulta appuntamenti, scrive documenti, usa posta elettronica e Web. Normalmente vengono utilizzati pochi programmi contemporaneamente.</p><div class="drop">Trascinate qui il PC scelto</div></div>
+<div class="office" data-answer="C"><h3>UFFICIO ANALISI DATI</h3><p>Elabora grandi fogli di calcolo e dataset e deve gestire più elaborazioni e applicazioni contemporaneamente. Non utilizza grafica 3D o montaggio video.</p><div class="drop">Trascinate qui il PC scelto</div></div>
+<div class="office" data-answer="B"><h3>DIREZIONE</h3><p>Usa documenti, presentazioni, videoconferenze, Web e dati aziendali. Richiede una macchina reattiva, ma non svolge elaborazioni pesanti né grafica professionale.</p><div class="drop">Trascinate qui il PC scelto</div></div>
+<div class="office" data-answer="B"><h3>UFFICIO AMMINISTRATIVO</h3><p>Utilizza contemporaneamente gestionale aziendale, fogli di calcolo, posta elettronica, molte schede del browser e videoconferenze.</p><div class="drop">Trascinate qui il PC scelto</div></div>
+</div>
+<div class="controls"><button class="verify" id="verify">VERIFICA ASSEGNAZIONI</button><button class="reset" id="reset">SVUOTA ASSEGNAZIONI</button></div>
+<div class="feedback" id="feedback">Assegnate un PC a tutti e cinque gli uffici.</div>
+</div></section>
+<section class="finish" id="finish"><div class="kicker">Configurazione approvata</div><h2>POSTAZIONI ASSEGNATE</h2><p>Le configurazioni rispondono correttamente alle esigenze degli uffici.</p><div class="relic">✦</div><strong>RELIQUIA RECUPERATA</strong></section>
+</div>
+<script>
+(()=>{
+const classe=(localStorage.getItem("museoInfo_classe")||"").trim().toUpperCase();
+const modalita=(localStorage.getItem("museoInfo_modalita")||"").trim().toLowerCase();
+const key=`museoInfo_${classe}_${modalita}_enigma08`;
+const valid=!!classe&&["ripasso","consolidamento"].includes(modalita);
+document.getElementById("mode").textContent="MODALITÀ "+(modalita?modalita.toUpperCase():"NON CONFIGURATA");
+if(!valid){document.getElementById("notice").innerHTML="<strong>Sessione non configurata.</strong> Tornate alla configurazione.";document.getElementById("panel").classList.add("hidden");return}
+document.getElementById("notice").innerHTML=modalita==="consolidamento"?"<strong>CONSOLIDAMENTO.</strong> Non cercate semplicemente il PC con i numeri più alti: confrontate le caratteristiche con il lavoro da svolgere.":"<strong>RIPASSO.</strong> Valutate l'intera configurazione in base alle esigenze. Se necessario, consultate l'Archivio tecnico.";
+document.getElementById("hint").innerHTML=modalita==="consolidamento"?"<strong>Promemoria:</strong> più core favoriscono la gestione di attività parallelizzabili; più RAM aiuta con molti dati/programmi aperti; una GPU dedicata è utile per elaborazioni grafiche.":"Confrontate CPU, core, frequenza, RAM, spazio di archiviazione e grafica.";
+let selected=null;
+document.querySelectorAll(".pc").forEach(p=>{
+ p.addEventListener("dragstart",()=>{selected=p.dataset.pc;p.classList.add("dragging")});
+ p.addEventListener("dragend",()=>{p.classList.remove("dragging");selected=null});
+ p.addEventListener("click",()=>{selected=p.dataset.pc;document.querySelectorAll(".pc").forEach(x=>x.style.outline="");p.style.outline="3px solid #5adfff";document.getElementById("feedback").textContent="PC "+selected+" selezionato. Cliccate sull'ufficio a cui volete assegnarlo."});
+});
+document.querySelectorAll(".office").forEach(o=>{
+ const d=o.querySelector(".drop");
+ d.addEventListener("dragover",e=>{e.preventDefault();d.classList.add("over")});
+ d.addEventListener("dragleave",()=>d.classList.remove("over"));
+ d.addEventListener("drop",e=>{e.preventDefault();d.classList.remove("over");if(selected)assign(o,selected)});
+ o.addEventListener("click",e=>{if(e.target.closest(".assigned"))return;if(selected)assign(o,selected)});
+});
+function assign(o,pc){o.dataset.value=pc;const d=o.querySelector(".drop");d.innerHTML=`<div class="assigned">PC ${pc}</div>`;document.querySelectorAll(".pc").forEach(x=>x.style.outline="")}
+document.getElementById("reset").onclick=()=>{document.querySelectorAll(".office").forEach(o=>{o.dataset.value="";o.querySelector(".drop").textContent="Trascinate qui il PC scelto"});document.getElementById("feedback").textContent="Assegnazioni svuotate.";document.getElementById("feedback").className="feedback"};
+document.getElementById("verify").onclick=()=>{
+ const offices=[...document.querySelectorAll(".office")],fb=document.getElementById("feedback");
+ if(offices.some(o=>!o.dataset.value)){fb.textContent="Prima assegnate un PC a tutti e cinque gli uffici.";fb.className="feedback err";return}
+ const wrong=offices.filter(o=>o.dataset.value!==o.dataset.answer).length;
+ if(wrong){fb.textContent=`${wrong} ${wrong===1?"postazione non è adatta":"postazioni non sono adatte"} alle esigenze indicate. Rileggete le richieste e riprovate.`;fb.className="feedback err";return}
+ fb.textContent="Tutte le assegnazioni sono corrette.";fb.className="feedback ok";localStorage.setItem(key,"true");document.getElementById("finish").classList.add("show");document.getElementById("verify").disabled=true;setTimeout(()=>document.getElementById("finish").scrollIntoView({behavior:"smooth"}),250)
+};
+if(["true","1","completato","completed","solved"].includes((localStorage.getItem(key)||"").toLowerCase()))document.getElementById("finish").classList.add("show");
+})();
+</script></body></html>
