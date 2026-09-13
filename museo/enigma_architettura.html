@@ -3,156 +3,103 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Enigma 06 — Diagnosi Hardware</title>
+<title>Enigma 06 — Architettura del computer</title>
 <style>
 :root{
-  --bg:#071018;--panel:#0d1b26;--line:#335268;
-  --cyan:#59dfff;--green:#5ee6a3;--red:#ff6b7d;
-  --text:#eef8ff;--muted:#9db1bf;
+  --bg:#071018;--panel:#0c1a25;--line:#315064;
+  --cyan:#5adfff;--green:#63e6a7;--red:#ff7182;
+  --text:#eef9ff;--muted:#9fb3c0;--card:#122432;
 }
 *{box-sizing:border-box}
-html,body{
-  margin:0;min-height:100%;
-  font-family:Inter,Segoe UI,Arial,sans-serif;
-  background:radial-gradient(circle at 20% 0%,rgba(68,143,190,.15),transparent 30%),
-             linear-gradient(180deg,#061018,#0a151f 65%,#050a0f);
-  color:var(--text)
-}
-body{padding:16px}
-.wrap{max-width:1120px;margin:auto}
+html,body{margin:0;min-height:100%;font-family:Inter,Segoe UI,Arial,sans-serif;background:
+linear-gradient(180deg,#061018,#0a151f 60%,#050b10);color:var(--text)}
+body{padding:14px}
+.wrap{max-width:1180px;margin:auto}
 .header{
   display:flex;justify-content:space-between;gap:18px;align-items:flex-start;
-  padding:18px 20px;border:1px solid var(--line);border-radius:16px;
-  background:rgba(9,23,33,.96);box-shadow:0 18px 50px rgba(0,0,0,.3)
+  padding:18px 20px;border:1px solid var(--line);border-radius:16px;background:#0a1721
 }
-.kicker{font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--cyan);font-weight:900}
-h1{margin:5px 0 4px;font-size:clamp(24px,3vw,38px)}
-.sub{color:var(--muted);line-height:1.45;max-width:760px}
+.kicker{font-size:12px;letter-spacing:.15em;color:var(--cyan);font-weight:900;text-transform:uppercase}
+h1{margin:5px 0 5px;font-size:clamp(24px,3vw,38px)}
+.sub{color:var(--muted);line-height:1.45;max-width:800px}
 .badges{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
 .badge{padding:8px 11px;border-radius:999px;border:1px solid #355c72;background:#0b1821;font-size:12px;font-weight:900}
-.notice{margin:14px 0;padding:13px 15px;border:1px solid #285069;border-radius:12px;background:#0a1721;line-height:1.45}
+.notice{
+  margin:14px 0;padding:13px 15px;border:1px solid #285069;border-radius:12px;
+  background:#0a1721;line-height:1.45
+}
 .notice strong{color:var(--cyan)}
-.panel{margin-top:16px;border:1px solid var(--line);border-radius:16px;background:#0b1823;overflow:hidden;box-shadow:0 14px 40px rgba(0,0,0,.18)}
-.panelHead{padding:14px 18px;border-bottom:1px solid var(--line);background:linear-gradient(90deg,#102433,#0c1b26);font-weight:900}
+.panel{border:1px solid var(--line);border-radius:16px;background:#0b1823;overflow:hidden}
+.panelHead{padding:14px 18px;border-bottom:1px solid var(--line);background:#102330;font-weight:900}
 .panelBody{padding:18px}
-.tests{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-.testCard{border:1px solid #2f5064;border-radius:14px;background:#09151e;padding:15px}
-.testCard h3{margin:0 0 10px;font-size:17px}
-.testBtn{
-  width:100%;border:0;border-radius:10px;padding:11px 14px;
-  background:linear-gradient(#7de8ff,#47c6ed);color:#041218;font-weight:900;cursor:pointer
+.instructions{margin:0 0 16px;color:#c7d8e2;line-height:1.5}
+.layout{display:grid;grid-template-columns:340px 1fr;gap:18px;align-items:start}
+.functions{
+  position:sticky;top:10px;border:1px solid #2d4d61;border-radius:14px;background:#08141d;padding:14px
 }
-.testBtn:disabled{opacity:.45;cursor:default}
-.result{
-  margin-top:10px;min-height:44px;border-radius:9px;padding:10px 12px;
-  background:#071018;border:1px solid #243f50;color:var(--muted);
-  font-family:Consolas,monospace
+.functions h3{margin:0 0 12px}
+.pool{display:grid;gap:9px}
+.func{
+  padding:11px 12px;border:1px solid #3d6379;border-radius:10px;background:linear-gradient(#173043,#112533);
+  cursor:grab;font-weight:750;line-height:1.3;user-select:none
 }
-.result.ok{color:var(--green);border-color:#306f52}
-.result.fail{color:#ff9daa;border-color:#7b3443}
-
-.diagnosis{display:none;margin-top:18px;padding:16px;border:1px solid #31546a;border-radius:13px;background:#091721}
-.diagnosis.show{display:block}
-.boardWrap{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px;align-items:start}
-.board{
-  position:relative;min-height:470px;border:5px solid #3e4f58;border-radius:16px;
-  background:
-    linear-gradient(90deg,rgba(58,97,73,.15) 1px,transparent 1px),
-    linear-gradient(rgba(58,97,73,.15) 1px,transparent 1px),
-    linear-gradient(145deg,#23352e,#13221d);
-  background-size:28px 28px,28px 28px,auto;
-  overflow:hidden;box-shadow:inset 0 0 35px rgba(0,0,0,.45)
+.func:active{cursor:grabbing}
+.func.dragging{opacity:.4}
+.components{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.component{
+  min-height:245px;border:1px solid #34586d;border-radius:15px;background:#0a1720;
+  padding:14px;display:flex;flex-direction:column
 }
-.chip,.ram,.iochip,.power,.trace{
-  position:absolute;cursor:pointer;transition:.15s;z-index:3
+.component.over{outline:3px solid rgba(90,223,255,.38);background:#0c202c}
+.compTop{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.icon{
+  width:74px;height:74px;flex:0 0 74px;border-radius:12px;border:1px solid #45677a;
+  background:#101f29;display:grid;place-items:center;font-size:38px
 }
-.chip:hover,.ram:hover,.iochip:hover,.power:hover,.trace:hover{filter:brightness(1.15)}
-.cpu{
-  left:39%;top:38%;width:150px;height:150px;border:8px solid #8a979f;border-radius:10px;
-  background:
-    repeating-linear-gradient(0deg,#1d252a 0 6px,#29353c 6px 12px);
-  box-shadow:0 0 0 10px #313d44,0 12px 25px rgba(0,0,0,.35)
+.component h3{margin:0;font-size:20px}
+.small{font-size:12px;color:var(--muted);margin-top:3px}
+.dropzone{
+  flex:1;min-height:120px;padding:9px;border:1px dashed #36566a;border-radius:11px;
+  background:#071119;display:flex;flex-direction:column;gap:8px
 }
-.cpu:after{
-  content:"";position:absolute;inset:27px;border:2px solid #79868e;border-radius:4px;
-  background:linear-gradient(135deg,#343f45,#1c2428)
+.placeholder{color:#657b89;font-size:13px;text-align:center;margin:auto}
+.dropzone .func{background:#102a37}
+.controls{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+button{
+  border:0;border-radius:10px;padding:12px 18px;font-weight:900;cursor:pointer
 }
-.ram{
-  left:72%;top:22%;width:58px;height:190px;border:3px solid #2b5f47;border-radius:5px;
-  background:linear-gradient(90deg,#1b5b3b,#28724d)
+.verify{background:linear-gradient(#7cecff,#4acbe9);color:#041217}
+.reset{background:#1a2b36;color:#d9e8ef;border:1px solid #3b596a}
+.feedback{
+  margin-top:14px;min-height:48px;border-radius:11px;padding:12px 14px;
+  border:1px solid #2c4a5d;background:#071119;color:var(--muted)
 }
-.ram:before,.ram:after{
-  content:"";position:absolute;left:7px;right:7px;height:28px;background:#12191d;border:1px solid #64727a;
-  box-shadow:0 42px 0 #12191d,0 84px 0 #12191d,0 126px 0 #12191d
-}
-.iochip{
-  left:12%;top:60%;width:120px;height:80px;border:4px solid #50636e;border-radius:9px;
-  background:#1c2a31
-}
-.iochip:after{
-  content:"";position:absolute;left:14px;right:14px;top:28px;height:10px;background:#60747f;
-  box-shadow:0 18px 0 #60747f
-}
-.power{
-  right:5%;bottom:7%;width:110px;height:84px;border:4px solid #5f6669;border-radius:8px;background:#22292d
-}
-.power:before{
-  content:"";position:absolute;left:14px;top:12px;width:40px;height:40px;border-radius:50%;
-  border:5px solid #535e64
-}
-
-.trace{
-  height:12px;background:#a58436;border:2px solid #d6b15a;border-radius:10px;
-  box-shadow:0 0 5px rgba(221,180,83,.2)
-}
-.trace.vertical{width:12px;height:auto}
-.t1{left:23%;top:67%;width:19%;transform:rotate(-12deg)}
-.t2{left:50%;top:31%;width:24%;transform:rotate(-16deg)}
-.t3{left:51%;top:66%;width:26%;transform:rotate(14deg)}
-.t4{left:65%;top:53%;width:22%;transform:rotate(28deg)}
-.t5{left:20%;top:44%;width:19%;transform:rotate(20deg)}
-.trace.fault.correct{background:#2f8f60;border-color:#66e5a6;box-shadow:0 0 14px rgba(94,230,163,.65)}
-.choiceWrong{outline:4px solid rgba(255,107,125,.5)}
-.boardLabel{
-  position:absolute;left:14px;top:12px;font-size:11px;letter-spacing:.12em;
-  color:#9ec4b0;font-weight:900;opacity:.85
-}
-.console{
-  border:1px solid #2d5065;border-radius:13px;background:#071018;padding:14px;
-  font-family:Consolas,monospace;line-height:1.65
-}
-.console .ok{color:var(--green)} .console .bad{color:#ff8e9c}
-.feedback{margin-top:12px;font-weight:850}
-.feedback.ok{color:var(--green)} .feedback.err{color:#ff9daa}
-.repair{display:none;margin-top:18px;padding:16px;border:1px solid #3a6d55;border-radius:13px;background:#0d261d}
-.repair.show{display:block}
-.repairBtn{
-  border:0;border-radius:10px;padding:12px 17px;font-weight:900;
-  background:linear-gradient(#8af0b9,#52d993);color:#06140d;cursor:pointer
-}
+.feedback.ok{color:var(--green);border-color:#347654}
+.feedback.err{color:#ff9fab;border-color:#743847}
 .finish{
-  display:none;margin-top:20px;padding:24px;border:1px solid #418d69;border-radius:18px;
+  display:none;margin-top:18px;padding:22px;border:1px solid #418d69;border-radius:17px;
   background:linear-gradient(#0f2e24,#0a2119);text-align:center
 }
 .finish.show{display:block}
 .relic{
-  width:100px;height:100px;margin:17px auto 10px;border:1px solid #5ce6a0;border-radius:22px;
-  background:#091d16;color:#a3ffd3;display:grid;place-items:center;font-size:58px
+  width:96px;height:96px;margin:15px auto 9px;border:1px solid #5ce6a0;border-radius:21px;
+  background:#091d16;color:#a3ffd3;display:grid;place-items:center;font-size:56px
 }
 .hidden{display:none!important}
-@media(max-width:800px){
-  body{padding:9px}.header{flex-direction:column}.tests{grid-template-columns:1fr}
-  .badges{justify-content:flex-start}.boardWrap{grid-template-columns:1fr}.board{min-height:420px}
+@media(max-width:850px){
+  .layout{grid-template-columns:1fr}.functions{position:static}
+  .components{grid-template-columns:1fr}.header{flex-direction:column}.badges{justify-content:flex-start}
 }
 </style>
 </head>
 <body>
 <div class="wrap">
+
   <section class="header">
     <div>
       <div class="kicker">Museo dell'Informatica // Galleria Hardware</div>
-      <h1>ENIGMA 06 — DIAGNOSI DEL COMPUTER</h1>
-      <div class="sub">Un computer della mostra non completa il test di funzionamento. Eseguite tutte le verifiche e localizzate il guasto sulla scheda.</div>
+      <h1>ENIGMA 06 — RICOMPONI L'ARCHITETTURA</h1>
+      <div class="sub">Le descrizioni dei componenti sono state separate durante la manutenzione. Riassociate ogni funzione al componente corretto.</div>
     </div>
     <div class="badges">
       <div class="badge">GRUPPO 2</div>
@@ -162,99 +109,83 @@ h1{margin:5px 0 4px;font-size:clamp(24px,3vw,38px)}
 
   <div class="notice" id="modeNotice"></div>
 
-  <section class="panel">
-    <div class="panelHead">FASE 1 — ESEGUITE I TEST</div>
+  <section class="panel" id="mainPanel">
+    <div class="panelHead">POSTAZIONE 06 // ARCHITETTURA DI VON NEUMANN</div>
     <div class="panelBody">
-      <div class="tests">
-        <div class="testCard">
-          <h3>⌨️ Tastiera</h3>
-          <button class="testBtn" data-test="keyboard">TESTA INPUT TASTIERA</button>
-          <div class="result" id="r-keyboard">In attesa del test...</div>
-        </div>
+      <p class="instructions">
+        Trascinate tutte le funzioni sui componenti corretti. <strong>Ogni componente può ricevere più di una funzione.</strong>
+        Potete spostare le schede tutte le volte che volete prima della verifica.
+      </p>
 
-        <div class="testCard">
-          <h3>🖱️ Mouse</h3>
-          <button class="testBtn" data-test="mouse">TESTA INPUT MOUSE</button>
-          <div class="result" id="r-mouse">In attesa del test...</div>
-        </div>
+      <div class="layout">
+        <aside class="functions">
+          <h3>FUNZIONI DA ASSEGNARE</h3>
+          <div class="pool" id="pool"></div>
+        </aside>
 
-        <div class="testCard">
-          <h3>💾 Memoria</h3>
-          <button class="testBtn" data-test="memory">TESTA MEMORIA</button>
-          <div class="result" id="r-memory">In attesa del test...</div>
-        </div>
+        <div class="components">
 
-        <div class="testCard">
-          <h3>🖥️ Monitor</h3>
-          <button class="testBtn" data-test="monitor">TESTA OUTPUT MONITOR</button>
-          <div class="result" id="r-monitor">In attesa del test...</div>
-        </div>
-
-        <div class="testCard">
-          <h3>⚙️ Elaborazione</h3>
-          <button class="testBtn" data-test="cpu">TESTA ELABORAZIONE</button>
-          <div class="result" id="r-cpu">In attesa del test...</div>
-        </div>
-
-        <div class="testCard">
-          <h3>🔗 Trasferimento dati</h3>
-          <button class="testBtn" data-test="bus">TESTA TRASFERIMENTO</button>
-          <div class="result" id="r-bus">In attesa del test...</div>
-        </div>
-      </div>
-
-      <div class="diagnosis" id="diagnosis">
-        <h3 style="margin-top:0">FASE 2 — LOCALIZZATE IL GUASTO</h3>
-        <p>Avete tutti i risultati. Osservate l'interno del computer e cliccate direttamente sull'elemento che ritenete responsabile del malfunzionamento.</p>
-
-        <div class="boardWrap">
-          <div class="board" id="board">
-            <div class="boardLabel">VISTA INTERNA // DIAGNOSTICA MANUALE</div>
-
-            <div class="chip cpu" data-target="cpu" title=""></div>
-            <div class="ram" data-target="memory" title=""></div>
-            <div class="iochip" data-target="io" title=""></div>
-            <div class="power" data-target="power" title=""></div>
-
-            <div class="trace t1" data-target="trace-io"></div>
-            <div class="trace t2 fault" data-target="fault"></div>
-            <div class="trace t3" data-target="trace-out"></div>
-            <div class="trace t4" data-target="trace-power"></div>
-            <div class="trace t5" data-target="trace-other"></div>
-          </div>
-
-          <div>
-            <div class="console">
-              <div class="ok">INPUT TASTIERA: OK</div>
-              <div class="ok">INPUT MOUSE: OK</div>
-              <div class="ok">MEMORIA — SCRITTURA: OK</div>
-              <div class="ok">MEMORIA — LETTURA: OK</div>
-              <div class="ok">OUTPUT VIDEO: OK</div>
-              <div class="ok">ELABORAZIONE 7 + 5 = 12: OK</div>
-              <div class="bad">TRASFERIMENTO CPU ↔ MEMORIA: ERRORE</div>
+          <section class="component" data-zone="cpu">
+            <div class="compTop">
+              <div class="icon">▣</div>
+              <div><h3>CPU</h3><div class="small">Unità centrale di elaborazione</div></div>
             </div>
-            <div class="feedback" id="diagFeedback">Nessun elemento selezionato.</div>
-          </div>
-        </div>
+            <div class="dropzone" data-drop="cpu"><div class="placeholder">Trascinate qui le funzioni</div></div>
+          </section>
 
-        <div class="repair" id="repair">
-          <h3 style="margin-top:0">DIAGNOSI CONFERMATA</h3>
-          <p>Il collegamento tra elaborazione e memoria è interrotto.</p>
-          <button class="repairBtn" id="repairBtn">RIPARA COLLEGAMENTO</button>
-          <div class="feedback" id="repairFeedback"></div>
+          <section class="component" data-zone="memory">
+            <div class="compTop">
+              <div class="icon">▤</div>
+              <div><h3>MEMORIA</h3><div class="small">Area di memorizzazione</div></div>
+            </div>
+            <div class="dropzone" data-drop="memory"><div class="placeholder">Trascinate qui le funzioni</div></div>
+          </section>
+
+          <section class="component" data-zone="input">
+            <div class="compTop">
+              <div class="icon">⌨</div>
+              <div><h3>INPUT</h3><div class="small">Periferiche di ingresso</div></div>
+            </div>
+            <div class="dropzone" data-drop="input"><div class="placeholder">Trascinate qui le funzioni</div></div>
+          </section>
+
+          <section class="component" data-zone="output">
+            <div class="compTop">
+              <div class="icon">▰</div>
+              <div><h3>OUTPUT</h3><div class="small">Periferiche di uscita</div></div>
+            </div>
+            <div class="dropzone" data-drop="output"><div class="placeholder">Trascinate qui le funzioni</div></div>
+          </section>
+
+          <section class="component" data-zone="bus" style="grid-column:1/-1">
+            <div class="compTop">
+              <div class="icon">⇄</div>
+              <div><h3>BUS</h3><div class="small">Collegamenti per lo scambio di informazioni</div></div>
+            </div>
+            <div class="dropzone" data-drop="bus"><div class="placeholder">Trascinate qui le funzioni</div></div>
+          </section>
+
         </div>
       </div>
+
+      <div class="controls">
+        <button class="verify" id="verifyBtn">VERIFICA ASSOCIAZIONI</button>
+        <button class="reset" id="resetBtn">RIPORTA TUTTO ALL'INIZIO</button>
+      </div>
+
+      <div class="feedback" id="feedback">Completate tutte le associazioni prima della verifica.</div>
     </div>
   </section>
 
   <section class="finish" id="finish">
-    <div class="kicker">Diagnosi completata</div>
-    <h2>ARCHITETTURA RIPRISTINATA</h2>
-    <p>La comunicazione interna è stata ripristinata.</p>
+    <div class="kicker">Postazione completata</div>
+    <h2>ARCHITETTURA RICOSTRUITA</h2>
+    <p>Tutti i componenti sono stati associati correttamente alle proprie funzioni.</p>
     <div class="relic">⬢</div>
     <strong>RELIQUIA RECUPERATA</strong>
     <div style="margin-top:8px;color:var(--muted);font-size:12px">Il Codificatore ha registrato il completamento dell'enigma.</div>
   </section>
+
 </div>
 
 <script>
@@ -268,79 +199,151 @@ h1{margin:5px 0 4px;font-size:clamp(24px,3vw,38px)}
 
   if(!validSession){
     document.getElementById("modeNotice").innerHTML="<strong>Sessione non configurata.</strong> Tornate alla configurazione del museo.";
-    document.querySelector(".panel").classList.add("hidden");
+    document.getElementById("mainPanel").classList.add("hidden");
     return;
   }
 
   document.getElementById("modeNotice").innerHTML =
     modalita==="consolidamento"
-      ? "<strong>CONSOLIDAMENTO.</strong> Eseguite tutti i test e confrontate attentamente ciò che funziona con ciò che non funziona."
-      : "<strong>RIPASSO.</strong> Eseguite tutti i test e interpretate gli esiti. Se necessario, consultate l'Archivio tecnico.";
+      ? "<strong>CONSOLIDAMENTO.</strong> Pensate al ruolo generale di ogni parte del computer prima di trascinare le funzioni."
+      : "<strong>RIPASSO.</strong> Ricostruite l'architettura. Se necessario, consultate l'Archivio tecnico.";
 
-  const tests={
-    keyboard:["TASTO A → CODICE RICEVUTO 65","ok"],
-    mouse:["MOVIMENTO RILEVATO → X:+12  Y:-4","ok"],
-    memory:["SCRITTURA BLOCCO 04: OK · LETTURA BLOCCO 04: OK","ok"],
-    monitor:["SEGNALE VIDEO RICEVUTO · DISPLAY TEST: OK","ok"],
-    cpu:["OPERAZIONE 7 + 5 → RISULTATO 12 · OK","ok"],
-    bus:["CPU → MEMORIA: ERRORE · MEMORIA → CPU: ERRORE","fail"]
-  };
+  const cards = [
+    {id:"f1", text:"Esegue le istruzioni dei programmi", target:"cpu"},
+    {id:"f2", text:"Coordina le operazioni del computer", target:"cpu"},
+    {id:"f3", text:"Conserva dati e istruzioni necessari all'elaborazione", target:"memory"},
+    {id:"f4", text:"Mette a disposizione della CPU informazioni da elaborare", target:"memory"},
+    {id:"f5", text:"Permette di inserire dati e comandi", target:"input"},
+    {id:"f6", text:"Trasforma azioni dell'utente in informazioni per il computer", target:"input"},
+    {id:"f7", text:"Comunica all'utente i risultati dell'elaborazione", target:"output"},
+    {id:"f8", text:"Rende percepibili all'esterno informazioni prodotte dal computer", target:"output"},
+    {id:"f9", text:"Trasferisce dati e segnali tra i componenti", target:"bus"},
+    {id:"f10", text:"Permette la comunicazione interna tra CPU, memoria e periferiche", target:"bus"}
+  ];
 
-  let done=new Set();
+  const pool=document.getElementById("pool");
+  const feedback=document.getElementById("feedback");
+  let dragged=null;
 
-  document.querySelectorAll(".testBtn").forEach(btn=>{
-    btn.addEventListener("click",()=>{
-      const key=btn.dataset.test;
-      const [msg,state]=tests[key];
-      const box=document.getElementById("r-"+key);
-      box.textContent=msg;
-      box.className="result "+state;
-      btn.disabled=true;
-      done.add(key);
+  function makeCard(c){
+    const el=document.createElement("div");
+    el.className="func";
+    el.draggable=true;
+    el.dataset.id=c.id;
+    el.dataset.target=c.target;
+    el.textContent=c.text;
 
-      if(done.size===Object.keys(tests).length){
-        document.getElementById("diagnosis").classList.add("show");
-        setTimeout(()=>document.getElementById("diagnosis").scrollIntoView({behavior:"smooth",block:"start"}),250);
-      }
+    el.addEventListener("dragstart",()=>{
+      dragged=el;
+      setTimeout(()=>el.classList.add("dragging"),0);
     });
-  });
+    el.addEventListener("dragend",()=>{
+      el.classList.remove("dragging");
+      dragged=null;
+      cleanupPlaceholders();
+    });
 
-  const feedback=document.getElementById("diagFeedback");
-  const repair=document.getElementById("repair");
-
-  document.querySelectorAll("[data-target]").forEach(el=>{
+    // click/touch fallback: first tap selects, second tap on zone places
     el.addEventListener("click",()=>{
-      document.querySelectorAll("[data-target]").forEach(x=>x.classList.remove("choiceWrong"));
-      if(el.dataset.target==="fault"){
-        el.classList.add("correct");
-        feedback.textContent="Diagnosi corretta: avete individuato il collegamento interrotto tra elaborazione e memoria.";
-        feedback.className="feedback ok";
-        repair.classList.add("show");
-      }else{
-        el.classList.add("choiceWrong");
-        let msg="Questo elemento non corrisponde al guasto rilevato. Rileggete i risultati dei test.";
-        if(el.dataset.target==="cpu") msg="L'unità di elaborazione ha eseguito correttamente il calcolo 7 + 5.";
-        if(el.dataset.target==="memory") msg="La memoria ha superato sia la prova di scrittura sia quella di lettura.";
-        if(el.dataset.target==="io") msg="Le periferiche di input hanno superato i test.";
-        if(el.dataset.target==="power") msg="Il computer è acceso e i componenti risultano operativi: cercate altrove.";
-        feedback.textContent=msg;
-        feedback.className="feedback err";
+      document.querySelectorAll(".func").forEach(x=>x.style.outline="");
+      dragged=el;
+      el.style.outline="2px solid #5adfff";
+      feedback.textContent="Scheda selezionata. Cliccate sul componente a cui volete associarla.";
+      feedback.className="feedback";
+    });
+    return el;
+  }
+
+  cards.forEach(c=>pool.appendChild(makeCard(c)));
+
+  function cleanupPlaceholders(){
+    document.querySelectorAll(".dropzone").forEach(z=>{
+      const ph=z.querySelector(".placeholder");
+      const has=z.querySelector(".func");
+      if(ph) ph.style.display=has?"none":"block";
+    });
+  }
+
+  document.querySelectorAll(".component").forEach(comp=>{
+    const zone=comp.querySelector(".dropzone");
+
+    comp.addEventListener("dragover",e=>{e.preventDefault();comp.classList.add("over")});
+    comp.addEventListener("dragleave",()=>comp.classList.remove("over"));
+    comp.addEventListener("drop",e=>{
+      e.preventDefault();
+      comp.classList.remove("over");
+      if(dragged){
+        zone.appendChild(dragged);
+        dragged.style.outline="";
+        dragged=null;
+        cleanupPlaceholders();
+      }
+    });
+
+    comp.addEventListener("click",e=>{
+      if(e.target.closest(".func")) return;
+      if(dragged){
+        zone.appendChild(dragged);
+        dragged.style.outline="";
+        dragged=null;
+        cleanupPlaceholders();
       }
     });
   });
 
-  document.getElementById("repairBtn").addEventListener("click",()=>{
-    document.querySelector(".fault").style.background="#2f8f60";
-    document.querySelector(".fault").style.borderColor="#66e5a6";
-    document.querySelector(".fault").style.boxShadow="0 0 14px rgba(94,230,163,.65)";
-    const fb=document.getElementById("repairFeedback");
-    fb.innerHTML="COLLEGAMENTO RIPRISTINATO ✓<br>CPU ↔ MEMORIA: OK<br>TRASFERIMENTO DATI: OK";
-    fb.className="feedback ok";
-    localStorage.setItem(solvedKey,"true");
-    document.getElementById("finish").classList.add("show");
-    document.getElementById("repairBtn").disabled=true;
-    setTimeout(()=>document.getElementById("finish").scrollIntoView({behavior:"smooth",block:"center"}),300);
+  // Allow cards to be returned to pool by dropping.
+  pool.addEventListener("dragover",e=>e.preventDefault());
+  pool.addEventListener("drop",e=>{
+    e.preventDefault();
+    if(dragged){
+      pool.appendChild(dragged);
+      dragged.style.outline="";
+      dragged=null;
+      cleanupPlaceholders();
+    }
   });
+
+  document.getElementById("verifyBtn").addEventListener("click",()=>{
+    const placed=[...document.querySelectorAll(".dropzone .func")];
+
+    if(placed.length!==cards.length){
+      feedback.textContent=`Mancano ancora ${cards.length-placed.length} funzioni da associare.`;
+      feedback.className="feedback err";
+      return;
+    }
+
+    let wrong=0;
+    placed.forEach(card=>{
+      const zone=card.closest(".dropzone").dataset.drop;
+      if(zone!==card.dataset.target) wrong++;
+    });
+
+    if(wrong===0){
+      feedback.textContent="Tutte le associazioni sono corrette.";
+      feedback.className="feedback ok";
+      localStorage.setItem(solvedKey,"true");
+      document.getElementById("finish").classList.add("show");
+      document.getElementById("verifyBtn").disabled=true;
+      setTimeout(()=>document.getElementById("finish").scrollIntoView({behavior:"smooth",block:"center"}),250);
+    }else{
+      feedback.textContent=`Ci sono ${wrong} associazioni non corrette. Potete spostare le schede e riprovare.`;
+      feedback.className="feedback err";
+    }
+  });
+
+  document.getElementById("resetBtn").addEventListener("click",()=>{
+    cards.forEach(c=>{
+      const el=document.querySelector(`.func[data-id="${c.id}"]`);
+      pool.appendChild(el);
+      el.style.outline="";
+    });
+    dragged=null;
+    cleanupPlaceholders();
+    feedback.textContent="Tutte le funzioni sono state riportate all'inizio.";
+    feedback.className="feedback";
+  });
+
+  cleanupPlaceholders();
 
   const existing=(localStorage.getItem(solvedKey)||"").toLowerCase();
   if(["true","1","completato","completed","solved"].includes(existing)){
