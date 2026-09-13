@@ -1,0 +1,908 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Enigma 02 — Decimale → Binario</title>
+
+<style>
+:root{
+  --bg:#041018;
+  --panel:#0b2430;
+  --panel2:#0f2e3b;
+  --line:#2e6174;
+  --cyan:#74e8ff;
+  --green:#70f1ad;
+  --red:#ff6676;
+  --yellow:#ffd66f;
+  --text:#ecfbff;
+  --muted:#91b6c2;
+}
+*{box-sizing:border-box}
+html,body{
+  margin:0;
+  min-height:100%;
+  font-family:Inter,Segoe UI,Arial,sans-serif;
+  color:var(--text);
+  background:radial-gradient(circle at 50% 0%,#17394a 0%,#081923 44%,#030a0f 100%);
+}
+body{padding:16px}
+.console{
+  width:min(1180px,100%);
+  margin:auto;
+  border:1px solid #285568;
+  border-radius:18px;
+  overflow:hidden;
+  background:linear-gradient(180deg,#0b202a,#071720);
+  box-shadow:0 24px 70px #0009;
+}
+header{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:18px;
+  align-items:center;
+  padding:20px 24px;
+  background:linear-gradient(180deg,#183d4e,#102a36);
+  border-bottom:1px solid #2b5c70;
+}
+.eyebrow{
+  color:var(--cyan);
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:.17em;
+  margin-bottom:7px;
+}
+h1{
+  margin:0;
+  font-size:clamp(24px,3vw,38px);
+  letter-spacing:.035em;
+}
+.subtitle{margin-top:7px;color:var(--muted);font-size:13px}
+.badge{
+  min-width:165px;
+  text-align:center;
+  padding:11px 15px;
+  border-radius:11px;
+  border:1px solid #3d829a;
+  background:#0a202b;
+  font-weight:900;
+  letter-spacing:.08em;
+}
+.badge small{
+  display:block;
+  color:#75bfd0;
+  font-size:9px;
+  letter-spacing:.17em;
+  margin-bottom:4px;
+}
+.statusbar{
+  display:grid;
+  grid-template-columns:1fr auto auto;
+  gap:10px;
+  align-items:center;
+  padding:11px 24px;
+  background:#06151d;
+  border-bottom:1px solid #1c4251;
+  font-size:12px;
+}
+.machine-status{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  color:#c4dce4;
+}
+.lamp{
+  width:10px;height:10px;border-radius:50%;
+  background:var(--red);
+  box-shadow:0 0 12px var(--red);
+}
+.tag{
+  border:1px solid #285a6d;
+  background:#0b2330;
+  border-radius:7px;
+  padding:7px 9px;
+  color:#b9f4ff;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.07em;
+}
+main{padding:20px 24px 26px}
+.warning{
+  display:none;
+  margin-bottom:16px;
+  padding:12px 14px;
+  border:1px solid #8b6c2d;
+  border-radius:10px;
+  background:#2d2411;
+  color:#ffe5a1;
+  font-size:12px;
+  line-height:1.45;
+}
+.warning.show{display:block}
+.instructions{
+  border:1px solid #28576a;
+  border-radius:13px;
+  background:#0a202a;
+  padding:15px 17px;
+  color:#c8dfe6;
+  line-height:1.5;
+}
+.instructions strong{color:white}
+.progress{
+  display:flex;
+  justify-content:center;
+  gap:18px;
+  margin:20px 0;
+}
+.progress-dot{
+  width:20px;height:20px;
+  border:2px solid #375d6e;
+  border-radius:50%;
+  background:#122730;
+  box-shadow:inset 0 0 8px #000;
+}
+.progress-dot.on{
+  border-color:#a6ffd0;
+  background:var(--green);
+  box-shadow:0 0 15px #62f1aa88;
+}
+.modules{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:15px;
+}
+.module{
+  border:1px solid #2d6074;
+  border-radius:15px;
+  padding:16px;
+  background:linear-gradient(180deg,#11313f,#091d27);
+}
+.module.success{
+  border-color:#54a77d;
+  box-shadow:inset 0 0 25px #40dc9420;
+}
+.module.error{border-color:#a84753}
+.module-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  margin-bottom:14px;
+}
+.module-title{
+  font-size:12px;
+  font-weight:900;
+  letter-spacing:.1em;
+}
+.module-state{
+  color:#7fa5b1;
+  font-size:9px;
+  letter-spacing:.13em;
+}
+.module.success .module-state{color:var(--green)}
+.target{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:12px 14px;
+  border:1px solid #3a6d7f;
+  border-radius:10px;
+  background:#071820;
+  margin-bottom:12px;
+}
+.target small{
+  color:#84aeba;
+  font-size:9px;
+  letter-spacing:.13em;
+  font-weight:900;
+}
+.target strong{
+  color:#fff0a8;
+  font:900 30px "Courier New",monospace;
+}
+.division-stack{
+  display:grid;
+  gap:8px;
+}
+.division-row{
+  display:grid;
+  grid-template-columns:auto auto minmax(62px,1fr) auto auto auto;
+  gap:7px;
+  align-items:center;
+  padding:8px;
+  border:1px solid #244c5b;
+  border-radius:9px;
+  background:#07161d;
+}
+.dividend{
+  min-width:30px;
+  text-align:center;
+  color:#e9fbff;
+  font:900 18px "Courier New",monospace;
+}
+.op{
+  color:#7fa5b1;
+  font-weight:800;
+}
+.q-input{
+  min-width:0;
+  width:100%;
+  height:42px;
+  border:1px solid #376779;
+  border-radius:7px;
+  background:#041219;
+  color:#fff2b8;
+  text-align:center;
+  font:900 18px "Courier New",monospace;
+  outline:none;
+}
+.q-input:focus{
+  border-color:#7de8fa;
+  box-shadow:0 0 0 2px #5be4ff20;
+}
+.remainder-pick{
+  display:flex;
+  gap:5px;
+}
+.rem-btn{
+  min-width:42px;
+  min-height:42px;
+  padding:0;
+  border:1px solid #366577;
+  border-radius:7px;
+  background:#0a202a;
+  color:#eafaff;
+  font:900 18px "Courier New",monospace;
+  cursor:pointer;
+}
+.rem-btn.selected{
+  border-color:#7be9ff;
+  background:#123b48;
+  box-shadow:0 0 10px #4be8ff22;
+}
+.confirm-step{
+  min-height:42px;
+  border:1px solid #3c829b;
+  border-radius:7px;
+  background:linear-gradient(#16475b,#0e3241);
+  color:white;
+  padding:0 10px;
+  font-weight:900;
+  cursor:pointer;
+}
+.confirm-step:disabled,
+.q-input:disabled,
+.rem-btn:disabled{
+  opacity:.48;
+  cursor:not-allowed;
+}
+.step-ok{
+  color:var(--green);
+  font-size:18px;
+  visibility:hidden;
+}
+.step-ok.show{visibility:visible}
+.output-zone{
+  margin-top:13px;
+  padding:11px;
+  border:1px solid #29596b;
+  border-radius:10px;
+  background:#06171e;
+}
+.output-title{
+  color:#88adba;
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.13em;
+  margin-bottom:9px;
+}
+.rest-rack,
+.binary-slots{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  align-items:center;
+}
+.rest-rack{margin-bottom:10px}
+.token{
+  width:42px;
+  height:42px;
+  display:grid;
+  place-items:center;
+  border:1px solid #6d7e84;
+  border-radius:8px;
+  background:#172229;
+  color:white;
+  font:900 20px "Courier New",monospace;
+  cursor:pointer;
+  user-select:none;
+}
+.token.selected{
+  border-color:#ffe28d;
+  box-shadow:0 0 10px #ffd66f44;
+}
+.token.used{
+  opacity:.28;
+  cursor:not-allowed;
+}
+.slot{
+  width:46px;
+  height:46px;
+  display:grid;
+  place-items:center;
+  border:1px dashed #4c7b8d;
+  border-radius:8px;
+  background:#081b24;
+  color:#effcff;
+  font:900 21px "Courier New",monospace;
+  cursor:pointer;
+}
+.slot.filled{
+  border-style:solid;
+  border-color:#6eb7cc;
+}
+.verify-final{
+  margin-top:10px;
+  min-height:44px;
+  width:100%;
+  border:1px solid #3c829b;
+  border-radius:8px;
+  background:linear-gradient(#16475b,#0e3241);
+  color:#fff;
+  font-weight:900;
+  letter-spacing:.06em;
+  cursor:pointer;
+}
+.feedback{
+  min-height:20px;
+  margin-top:9px;
+  color:#8fb2bd;
+  font-size:11px;
+}
+.feedback.good{color:#8effbf}
+.feedback.bad{color:#ff9eaa}
+.help{
+  margin-top:18px;
+  padding-top:16px;
+  border-top:1px solid #204959;
+  color:#8db0bb;
+  font-size:11px;
+  line-height:1.45;
+}
+.help b{color:#daf9ff}
+.overlay{
+  position:fixed;
+  inset:0;
+  z-index:100;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+  background:#021019e8;
+}
+.overlay.show{display:flex}
+.reward{
+  width:min(580px,95vw);
+  padding:32px;
+  text-align:center;
+  border:1px solid #4eaa80;
+  border-radius:19px;
+  background:radial-gradient(circle at 50% 0,#164b3b,#0a211d 58%,#061310);
+}
+.reward .mini{
+  color:var(--green);
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.18em;
+}
+.reward h2{margin:11px 0;font-size:29px}
+.relic{
+  width:112px;height:112px;
+  margin:22px auto;
+  display:grid;
+  place-items:center;
+  border:1px solid #69e7bf;
+  border-radius:21px;
+  background:#0b2223;
+  color:#a1ffdc;
+  font-size:60px;
+}
+.reward p{color:#b9d5ce;line-height:1.5}
+.reward button{
+  min-height:44px;
+  border:1px solid #3c829b;
+  border-radius:8px;
+  background:linear-gradient(#16475b,#0e3241);
+  color:#fff;
+  padding:0 15px;
+  font-weight:900;
+  cursor:pointer;
+}
+@media(max-width:900px){
+  .modules{grid-template-columns:1fr}
+}
+@media(max-width:650px){
+  header,.statusbar{grid-template-columns:1fr}
+  .badge{justify-self:start}
+  main{padding:16px}
+  .division-row{
+    grid-template-columns:auto auto 1fr;
+  }
+  .remainder-pick,
+  .confirm-step,
+  .step-ok{
+    grid-column:auto;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="console">
+
+<header>
+  <div>
+    <div class="eyebrow">MUSEO DELL'INFORMATICA · GALLERIA DELL'INFORMAZIONE</div>
+    <h1>CONVERTITORE DECIMALE</h1>
+    <div class="subtitle">Sistema meccanico di conversione tramite divisioni successive per 2</div>
+  </div>
+
+  <div class="badge">
+    <small>ENIGMA 02</small>
+    GRUPPO 2
+  </div>
+</header>
+
+<div class="statusbar">
+  <div class="machine-status">
+    <span class="lamp" id="mainLamp"></span>
+    <strong id="machineStatus">4 CONVERSIONI DA COMPLETARE</strong>
+  </div>
+  <div class="tag" id="modeTag">MODALITÀ: —</div>
+  <div class="tag" id="classTag">CLASSE: —</div>
+</div>
+
+<main>
+
+  <div class="warning" id="configWarning">
+    Configurazione del museo non rilevata. L'enigma è utilizzabile, ma il completamento
+    non potrà essere registrato nel Codificatore.
+  </div>
+
+  <div class="instructions" id="instructions"></div>
+
+  <div class="progress">
+    <div class="progress-dot" id="progress0"></div>
+    <div class="progress-dot" id="progress1"></div>
+    <div class="progress-dot" id="progress2"></div>
+    <div class="progress-dot" id="progress3"></div>
+  </div>
+
+  <section class="modules" id="modules"></section>
+
+  <div class="help" id="helpText"></div>
+
+</main>
+</div>
+
+<div class="overlay" id="completionOverlay">
+  <div class="reward">
+    <div class="mini">CONVERSIONE COMPLETATA</div>
+    <h2>Enigma risolto</h2>
+    <div class="relic">⬡</div>
+    <p>
+      Il reperto è stato registrato automaticamente nel <b>Codificatore</b>.<br>
+      Non è necessario annotare alcun codice.
+    </p>
+    <button type="button" id="closeOverlay">TORNA ALLA GALLERIA</button>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ============================================================
+   STORAGE CONDIVISO
+   ============================================================ */
+
+function getStorage(key){
+  try{return localStorage.getItem(key);}
+  catch(e){return null;}
+}
+
+function setStorage(key,value){
+  try{
+    localStorage.setItem(key,value);
+    return true;
+  }catch(e){
+    return false;
+  }
+}
+
+const classe=(getStorage("museoInfo_classe")||"").trim().toUpperCase();
+const modalita=(getStorage("museoInfo_modalita")||"").trim().toLowerCase();
+
+const configurazioneValida=
+  !!classe && ["ripasso","consolidamento"].includes(modalita);
+
+const completionKey=configurazioneValida
+  ? `museoInfo_${classe}_${modalita}_enigma02`
+  : null;
+
+document.getElementById("classTag").textContent="CLASSE: "+(classe||"—");
+document.getElementById("modeTag").textContent=
+  "MODALITÀ: "+
+  (modalita==="ripasso"?"RIPASSO":
+   modalita==="consolidamento"?"CONSOLIDAMENTO":"NON CONFIGURATA");
+
+if(!configurazioneValida){
+  document.getElementById("configWarning").classList.add("show");
+}
+
+function valoreCompletato(v){
+  return ["true","1","completato","completed","solved"]
+    .includes(String(v||"").trim().toLowerCase());
+}
+
+/* ============================================================
+   TESTI PER MODALITÀ
+   ============================================================ */
+
+const instructions=document.getElementById("instructions");
+const helpText=document.getElementById("helpText");
+
+if(modalita==="ripasso"){
+  instructions.innerHTML=
+    "La macchina riceve un numero decimale. Completa le <strong>divisioni successive per 2</strong>, "+
+    "impostando ogni quoziente e scegliendo il resto corretto. Alla fine usa le tessere dei resti "+
+    "per costruire il numero binario.";
+  helpText.innerHTML=
+    "<b>RIPASSO:</b> la macchina non indica in quale ordine vadano letti i resti. "+
+    "Se non ricordi la regola, consulta l'Archivio Tecnico.";
+}else{
+  instructions.innerHTML=
+    "La macchina riceve un numero decimale. Completa le <strong>divisioni successive per 2</strong>, "+
+    "impostando ogni quoziente e scegliendo il resto corretto. Quando il quoziente arriva a 0, "+
+    "ricostruisci il numero binario leggendo i resti <strong>dall'ultimo ottenuto al primo</strong>.";
+  helpText.innerHTML=
+    "<b>CONSOLIDAMENTO:</b> dopo ogni passaggio corretto, il quoziente viene trasferito automaticamente "+
+    "alla divisione successiva.";
+}
+
+/* ============================================================
+   DATI
+   ============================================================ */
+
+const numeri=[13,18,21,26];
+const moduli=[];
+const risolti=[false,false,false,false];
+
+function divisioniCorrette(numero){
+  const rows=[];
+  let n=numero;
+  while(n>0){
+    rows.push({
+      dividendo:n,
+      quoziente:Math.floor(n/2),
+      resto:n%2
+    });
+    n=Math.floor(n/2);
+  }
+  return rows;
+}
+
+/* ============================================================
+   COSTRUZIONE MODULI
+   ============================================================ */
+
+const container=document.getElementById("modules");
+
+numeri.forEach((numero,index)=>{
+  const sol=divisioniCorrette(numero);
+
+  const art=document.createElement("article");
+  art.className="module";
+  art.id="module"+index;
+
+  art.innerHTML=`
+    <div class="module-head">
+      <div class="module-title">CONVERSIONE ${String(index+1).padStart(2,"0")}</div>
+      <div class="module-state" id="state${index}">IN ATTESA</div>
+    </div>
+
+    <div class="target">
+      <small>NUMERO DECIMALE IN INGRESSO</small>
+      <strong>${numero}</strong>
+    </div>
+
+    <div class="division-stack" id="stack${index}"></div>
+
+    <div class="output-zone" id="output${index}" hidden>
+      <div class="output-title">RESTI PRODOTTI</div>
+      <div class="rest-rack" id="rack${index}"></div>
+
+      <div class="output-title">NUMERO BINARIO IN USCITA</div>
+      <div class="binary-slots" id="slots${index}"></div>
+
+      <button type="button" class="verify-final" id="final${index}">
+        VERIFICA CONVERSIONE
+      </button>
+
+      <div class="feedback" id="feedback${index}"></div>
+    </div>
+  `;
+
+  container.appendChild(art);
+
+  const state={
+    numero,
+    sol,
+    step:0,
+    restiProdotti:[],
+    selectedToken:null,
+    slots:Array(sol.length).fill(null)
+  };
+
+  moduli.push(state);
+
+  creaRiga(index,0,numero);
+});
+
+/* ============================================================
+   DIVISIONI PASSO-PASSO
+   ============================================================ */
+
+function creaRiga(moduleIndex,rowIndex,dividendo){
+  const stack=document.getElementById("stack"+moduleIndex);
+
+  const row=document.createElement("div");
+  row.className="division-row";
+  row.id=`row_${moduleIndex}_${rowIndex}`;
+
+  row.innerHTML=`
+    <div class="dividend">${dividendo}</div>
+    <div class="op">÷ 2 =</div>
+
+    <input
+      class="q-input"
+      id="q_${moduleIndex}_${rowIndex}"
+      type="number"
+      inputmode="numeric"
+      min="0"
+      step="1"
+      aria-label="Quoziente">
+
+    <div class="op">resto</div>
+
+    <div class="remainder-pick">
+      <button type="button" class="rem-btn" data-value="0">0</button>
+      <button type="button" class="rem-btn" data-value="1">1</button>
+    </div>
+
+    <button type="button" class="confirm-step">CONFERMA</button>
+    <span class="step-ok">✓</span>
+  `;
+
+  stack.appendChild(row);
+
+  let restoScelto=null;
+  const remButtons=row.querySelectorAll(".rem-btn");
+
+  remButtons.forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      remButtons.forEach(b=>b.classList.remove("selected"));
+      btn.classList.add("selected");
+      restoScelto=Number(btn.dataset.value);
+    });
+  });
+
+  row.querySelector(".confirm-step").addEventListener("click",()=>{
+    const qInput=row.querySelector(".q-input");
+    const qText=qInput.value.trim();
+
+    if(qText===""){
+      return;
+    }
+
+    const q=Number(qText);
+    const corretto=moduli[moduleIndex].sol[rowIndex];
+
+    if(!Number.isInteger(q) || restoScelto===null){
+      return;
+    }
+
+    if(q!==corretto.quoziente || restoScelto!==corretto.resto){
+      row.style.borderColor="#a84753";
+      setTimeout(()=>{row.style.borderColor="";},700);
+      return;
+    }
+
+    qInput.disabled=true;
+    remButtons.forEach(b=>b.disabled=true);
+    row.querySelector(".confirm-step").disabled=true;
+    row.querySelector(".step-ok").classList.add("show");
+
+    moduli[moduleIndex].restiProdotti.push(restoScelto);
+    moduli[moduleIndex].step++;
+
+    if(corretto.quoziente===0){
+      mostraUscita(moduleIndex);
+    }else{
+      creaRiga(moduleIndex,rowIndex+1,corretto.quoziente);
+    }
+  });
+}
+
+/* ============================================================
+   TESSERE RESTI E USCITA BINARIA
+   Clic su tessera + clic su slot.
+   ============================================================ */
+
+function mostraUscita(moduleIndex){
+  const state=moduli[moduleIndex];
+  const output=document.getElementById("output"+moduleIndex);
+  const rack=document.getElementById("rack"+moduleIndex);
+  const slots=document.getElementById("slots"+moduleIndex);
+
+  output.hidden=false;
+  rack.innerHTML="";
+  slots.innerHTML="";
+
+  state.restiProdotti.forEach((valore,i)=>{
+    const token=document.createElement("button");
+    token.type="button";
+    token.className="token";
+    token.textContent=valore;
+    token.dataset.index=i;
+    token.setAttribute("aria-label",`Resto ${valore}`);
+
+    token.addEventListener("click",()=>{
+      if(token.classList.contains("used")) return;
+
+      rack.querySelectorAll(".token").forEach(t=>t.classList.remove("selected"));
+      token.classList.add("selected");
+      state.selectedToken=i;
+    });
+
+    rack.appendChild(token);
+  });
+
+  state.slots.forEach((_,slotIndex)=>{
+    const slot=document.createElement("button");
+    slot.type="button";
+    slot.className="slot";
+    slot.textContent="·";
+    slot.dataset.slot=slotIndex;
+    slot.setAttribute("aria-label",`Posizione binaria ${slotIndex+1}`);
+
+    slot.addEventListener("click",()=>{
+      if(state.selectedToken===null) return;
+
+      const tokenIndex=state.selectedToken;
+      const token=rack.querySelector(`.token[data-index="${tokenIndex}"]`);
+      if(!token || token.classList.contains("used")) return;
+
+      // Se lo slot conteneva già una tessera, la restituisce al rack.
+      if(state.slots[slotIndex]!==null){
+        const oldIndex=state.slots[slotIndex].tokenIndex;
+        const oldToken=rack.querySelector(`.token[data-index="${oldIndex}"]`);
+        if(oldToken) oldToken.classList.remove("used");
+      }
+
+      state.slots[slotIndex]={
+        value:state.restiProdotti[tokenIndex],
+        tokenIndex
+      };
+
+      slot.textContent=state.restiProdotti[tokenIndex];
+      slot.classList.add("filled");
+      token.classList.add("used");
+      token.classList.remove("selected");
+      state.selectedToken=null;
+    });
+
+    slots.appendChild(slot);
+  });
+
+  document.getElementById("final"+moduleIndex).addEventListener("click",()=>{
+    verificaFinale(moduleIndex);
+  });
+}
+
+/* ============================================================
+   VERIFICA FINALE
+   ============================================================ */
+
+function verificaFinale(moduleIndex){
+  const state=moduli[moduleIndex];
+  const feedback=document.getElementById("feedback"+moduleIndex);
+  const art=document.getElementById("module"+moduleIndex);
+
+  feedback.className="feedback";
+  art.classList.remove("error");
+
+  if(state.slots.some(s=>s===null)){
+    feedback.textContent="Completate tutte le posizioni del numero binario.";
+    feedback.classList.add("bad");
+    return;
+  }
+
+  const costruito=state.slots.map(s=>s.value).join("");
+  const corretto=state.restiProdotti.slice().reverse().join("");
+
+  if(costruito!==corretto){
+    feedback.textContent=
+      "Sequenza non corretta. Controllate l'ordine con cui avete disposto i resti.";
+    feedback.classList.add("bad");
+    art.classList.add("error");
+    return;
+  }
+
+  risolti[moduleIndex]=true;
+  art.classList.add("success");
+  document.getElementById("state"+moduleIndex).textContent="CONVERTITA";
+  document.getElementById("progress"+moduleIndex).classList.add("on");
+  document.getElementById("final"+moduleIndex).disabled=true;
+  feedback.textContent="Conversione corretta.";
+  feedback.classList.add("good");
+
+  if(risolti.every(Boolean)){
+    completaEnigma();
+  }
+}
+
+/* ============================================================
+   COMPLETAMENTO E LOCALSTORAGE
+   ============================================================ */
+
+function completaEnigma(){
+  const lamp=document.getElementById("mainLamp");
+  const status=document.getElementById("machineStatus");
+
+  lamp.style.background="var(--green)";
+  lamp.style.boxShadow="0 0 14px var(--green)";
+  status.textContent="CONVERTITORE OPERATIVO — 4 CONVERSIONI COMPLETATE";
+
+  if(configurazioneValida && completionKey){
+    setStorage(completionKey,"true");
+
+    try{
+      window.dispatchEvent(new CustomEvent("museoInfoPuzzleCompleted",{
+        detail:{
+          enigma:2,
+          gruppo:2,
+          classe,
+          modalita,
+          chiave:completionKey,
+          reperto:"⬡"
+        }
+      }));
+    }catch(e){}
+  }
+
+  document.getElementById("completionOverlay").classList.add("show");
+}
+
+/* ============================================================
+   STATO GIÀ COMPLETATO
+   ============================================================ */
+
+if(completionKey && valoreCompletato(getStorage(completionKey))){
+  document.getElementById("mainLamp").style.background="var(--green)";
+  document.getElementById("mainLamp").style.boxShadow="0 0 14px var(--green)";
+  document.getElementById("machineStatus").textContent=
+    "CONVERTITORE OPERATIVO — ENIGMA GIÀ REGISTRATO";
+}
+
+document.getElementById("closeOverlay").addEventListener("click",()=>{
+  document.getElementById("completionOverlay").classList.remove("show");
+});
+
+})();
+</script>
+
+</body>
+</html>
