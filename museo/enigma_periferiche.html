@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Enigma 11 — Laboratorio periferiche</title>
+<style>
+:root{
+  --bg:#061018;--panel:#0b1823;--panel2:#102330;--line:#29495d;
+  --cyan:#5bdcff;--green:#59e59b;--red:#ff697c;--yellow:#ffd66b;
+  --text:#eef8ff;--muted:#9eb2c0;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:Inter,Segoe UI,Arial,sans-serif;background:
+radial-gradient(circle at 20% 0%,rgba(59,139,190,.16),transparent 28%),
+linear-gradient(180deg,#061018,#08131c 60%,#050b11);color:var(--text)}
+body{padding:16px}.wrap{max-width:1180px;margin:auto}
+.header{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;padding:18px 20px;border:1px solid var(--line);border-radius:16px;background:rgba(9,24,35,.96);box-shadow:0 18px 50px rgba(0,0,0,.28)}
+.kicker{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--cyan);font-weight:900}
+h1{margin:5px 0 4px;font-size:clamp(24px,3.2vw,38px)}.sub{color:var(--muted);line-height:1.45;max-width:760px}
+.badges{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}.badge{padding:8px 11px;border-radius:999px;border:1px solid #355c72;background:#0a1720;font-size:12px;font-weight:900}
+.notice{margin:14px 0;padding:13px 15px;border:1px solid #285069;border-radius:12px;background:#0a1721;line-height:1.45}.notice strong{color:var(--cyan)}
+.progress{display:grid;grid-template-columns:repeat(7,1fr);gap:7px;margin:15px 0 20px}.dot{height:9px;border-radius:99px;border:1px solid #31566b;background:#173142}.dot.done{background:linear-gradient(90deg,#31cb7d,#74efb1);border-color:#5ee5a0}
+.stage{border:1px solid var(--line);border-radius:17px;overflow:hidden;background:#0b1823;box-shadow:0 14px 40px rgba(0,0,0,.18)}
+.stagehead{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 18px;border-bottom:1px solid var(--line);background:linear-gradient(90deg,#102433,#0c1b26)}
+.stagehead h2{margin:0;font-size:20px}.step{width:36px;height:36px;display:grid;place-items:center;border:1px solid #347697;border-radius:10px;background:#12364a;color:#c5f4ff;font-weight:900}
+.stagebody{padding:18px}.instruction{font-size:17px;line-height:1.5;margin:0 0 14px}.scaffold{padding:10px 12px;border-left:3px solid var(--cyan);background:#091722;color:#cceaf8;margin:0 0 16px;border-radius:8px}
+.lab{display:grid;grid-template-columns:minmax(250px,.82fr) minmax(350px,1.18fr);gap:18px;align-items:stretch}
+.devicebox,.pcbox{border:1px solid #2c4d61;border-radius:15px;background:#09151e;padding:16px;position:relative}
+.devicebox{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:330px}.deviceIcon{font-size:78px;filter:drop-shadow(0 8px 16px rgba(0,0,0,.3));margin-bottom:10px}.deviceName{font-size:21px;font-weight:900}.cableLabel{font-size:13px;color:var(--muted);margin-top:6px}
+.cableArea{width:100%;height:115px;position:relative;margin-top:15px}.wire{position:absolute;left:15%;top:48px;width:58%;height:8px;background:#171d21;border-radius:8px;box-shadow:0 2px 6px #000}.connector{position:absolute;left:67%;top:29px;width:68px;height:45px;border-radius:8px;background:linear-gradient(#bcc5cb,#7d8991);border:2px solid #dce4e8;display:grid;place-items:center;color:#10161a;font-size:11px;font-weight:900;cursor:grab;user-select:none;touch-action:none;box-shadow:0 5px 12px rgba(0,0,0,.35)}
+.connector:active{cursor:grabbing}.connector.connected{background:linear-gradient(#78efb1,#3ac67d);border-color:#bfffe0;cursor:default}.connector.bad{animation:shake .25s linear 2;background:linear-gradient(#ff9aa8,#e25368)}@keyframes shake{25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+.pcbox{min-height:330px}.pctitle{font-weight:900;margin-bottom:10px}.rear{height:260px;border:5px solid #313d45;border-radius:14px;background:linear-gradient(145deg,#222c32,#11191e);position:relative;box-shadow:inset 0 0 28px rgba(0,0,0,.5)}
+.fan{position:absolute;left:24px;top:28px;width:92px;height:92px;border:6px solid #59666e;border-radius:50%;background:repeating-conic-gradient(#20282d 0 15deg,#4a565e 15deg 30deg)}
+.ioPanel{position:absolute;right:24px;top:23px;width:190px;height:210px;border:2px solid #66737a;border-radius:8px;background:#263239}
+.port{position:absolute;display:flex;align-items:center;justify-content:center;color:#eaf8ff;font-size:9px;font-weight:900;letter-spacing:.04em;border:2px solid #829099;background:#0b1115;transition:.15s;z-index:2}
+.port.hover{box-shadow:0 0 0 4px rgba(91,220,255,.22);border-color:var(--cyan)}.port.goodflash{box-shadow:0 0 0 4px rgba(89,229,155,.25);border-color:var(--green)}.port.badflash{box-shadow:0 0 0 4px rgba(255,105,124,.23);border-color:var(--red)}
+#usb1{width:54px;height:20px;left:18px;top:20px}#usb2{width:54px;height:20px;left:18px;top:50px}#hdmi{width:64px;height:22px;left:102px;top:24px;clip-path:polygon(8% 0,92% 0,100% 32%,100% 100%,0 100%,0 32%)}
+#audio{width:27px;height:27px;border-radius:50%;left:28px;top:106px;background:#183e24;border-color:#48c779}#mic{width:27px;height:27px;border-radius:50%;left:74px;top:106px;background:#4a1d31;border-color:#ed6ba0}
+.portTag{display:none;position:absolute;white-space:nowrap;top:34px;left:50%;transform:translateX(-50%);font-size:10px;color:#cceaf8}.showlabels .portTag{display:block}
+.status{min-height:24px;margin-top:12px;font-weight:850}.status.ok{color:var(--green)}.status.err{color:#ff9aa8}
+.classify{display:none;margin-top:18px;padding:16px;border:1px solid #335469;border-radius:13px;background:#0a1721}.classify.show{display:block}.classify h3{margin:0 0 9px;font-size:17px}.choices{display:flex;gap:9px;flex-wrap:wrap}
+.choice{border:1px solid #3b6075;border-radius:10px;background:#102633;color:#eef8ff;padding:10px 13px;font-weight:900;cursor:pointer}.choice.sel{border-color:var(--cyan);background:#154158}.choice.correct{border-color:var(--green);background:#103b2b;color:#d2ffeb}.choice.wrong{border-color:var(--red);background:#451b25}
+.actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px}.verify{border:0;border-radius:10px;padding:11px 17px;font-weight:900;background:linear-gradient(#7de8ff,#47c6ed);color:#041218;cursor:pointer}.verify:disabled{opacity:.42;cursor:not-allowed}.feedback{font-weight:850}.feedback.ok{color:var(--green)}.feedback.err{color:#ff9aa8}
+.next{display:none;margin-top:18px;border:1px solid #47715c;border-radius:12px;background:#0d2a20;padding:13px 15px;color:#d8ffeb;font-weight:850}.next.show{display:block}
+.touchCard{max-width:720px;margin:auto;border:1px solid #31546a;border-radius:16px;background:#091721;padding:20px;text-align:center}.touchscreen{margin:10px auto 18px;width:min(420px,90%);aspect-ratio:16/9;border:12px solid #202a30;border-radius:18px;background:linear-gradient(135deg,#24495d,#0b1d28);display:grid;place-items:center;font-size:64px;box-shadow:inset 0 0 35px rgba(91,220,255,.15)}
+.finish{display:none;margin-top:20px;padding:24px;border:1px solid #418d69;border-radius:18px;background:linear-gradient(#0f2e24,#0a2119);text-align:center}.finish.show{display:block}.relic{width:100px;height:100px;margin:17px auto 10px;border:1px solid #5ce6a0;border-radius:22px;background:#091d16;color:#a3ffd3;display:grid;place-items:center;font-size:58px}
+.hidden{display:none!important}
+@media(max-width:780px){body{padding:9px}.header{flex-direction:column}.badges{justify-content:flex-start}.lab{grid-template-columns:1fr}.devicebox{min-height:260px}.rear{height:250px}.progress{gap:4px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <section class="header">
+    <div>
+      <div class="kicker">Museo dell'Informatica // Laboratorio tecnico</div>
+      <h1>ENIGMA 11 — RIPRISTINO PERIFERICHE</h1>
+      <div class="sub">Il laboratorio di manutenzione è rimasto incompleto. Eseguite le operazioni nell'ordine indicato dal sistema e verificate la funzione di ogni periferica.</div>
+    </div>
+    <div class="badges">
+      <div class="badge">GRUPPO 3</div>
+      <div class="badge" id="modeBadge">MODALITÀ —</div>
+    </div>
+  </section>
+
+  <div class="notice" id="modeNotice"></div>
+  <div class="progress">
+    <div class="dot" id="p1"></div><div class="dot" id="p2"></div><div class="dot" id="p3"></div>
+    <div class="dot" id="p4"></div><div class="dot" id="p5"></div><div class="dot" id="p6"></div><div class="dot" id="p7"></div>
+  </div>
+
+  <section class="stage" id="stage">
+    <div class="stagehead">
+      <div style="display:flex;align-items:center;gap:12px"><div class="step" id="stepNum">1</div><h2 id="stepTitle"></h2></div>
+      <div class="badge" id="counter">1 / 7</div>
+    </div>
+    <div class="stagebody" id="stageBody"></div>
+  </section>
+
+  <section class="finish" id="finish">
+    <div class="kicker">Procedura completata</div>
+    <h2>LABORATORIO RIPRISTINATO</h2>
+    <p>Tutti i dispositivi sono stati collegati e verificati correttamente.</p>
+    <div class="relic">✧</div>
+    <strong>RELIQUIA RECUPERATA</strong>
+    <div style="margin-top:8px;color:var(--muted);font-size:12px">Il Codificatore del museo ha registrato il completamento dell'enigma.</div>
+  </section>
+</div>
+
+<script>
+(() => {
+  const classe=(localStorage.getItem("museoInfo_classe")||"").trim().toUpperCase();
+  const modalita=(localStorage.getItem("museoInfo_modalita")||"").trim().toLowerCase();
+  const solvedKey=`museoInfo_${classe}_${modalita}_enigma11`;
+  const validSession=!!classe && ["ripasso","consolidamento"].includes(modalita);
+
+  const modeBadge=document.getElementById("modeBadge");
+  const modeNotice=document.getElementById("modeNotice");
+  modeBadge.textContent="MODALITÀ "+(modalita?modalita.toUpperCase():"NON CONFIGURATA");
+
+  if(!validSession){
+    modeNotice.innerHTML="<strong>Sessione non configurata.</strong> Tornate alla configurazione del museo e selezionate classe e modalità.";
+    document.getElementById("stage").classList.add("hidden");
+    return;
+  }
+
+  if(modalita==="consolidamento"){
+    modeNotice.innerHTML="<strong>CONSOLIDAMENTO.</strong> Il sistema vi darà qualche indicazione sulle porte da cercare. Dopo ogni collegamento dovrete stabilire la funzione della periferica.";
+  }else{
+    modeNotice.innerHTML="<strong>RIPASSO.</strong> Nessuna porta verrà suggerita. Se non ricordate la funzione delle periferiche, consultate l'Archivio tecnico.";
+  }
+
+  const tasks=[
+    {title:"Altoparlanti", icon:"🔊", cable:"Jack audio 3,5 mm", port:"audio", answer:"output",
+     instruction:"Collegate gli altoparlanti al PC usando il cavo presente sul banco.",
+     consolidate:"Cercate sul pannello posteriore la porta audio destinata all'uscita del suono."},
+    {title:"Microfono", icon:"🎙️", cable:"Jack microfono 3,5 mm", port:"mic", answer:"input",
+     instruction:"Collegate il microfono al PC.",
+     consolidate:"Cercate la porta audio dedicata al microfono."},
+    {title:"Monitor", icon:"🖥️", cable:"HDMI", port:"hdmi", answer:"output",
+     instruction:"Collegate il monitor al PC con il cavo HDMI.",
+     consolidate:"Individuate sul pannello una porta con la forma tipica del connettore HDMI."},
+    {title:"Stampante", icon:"🖨️", cable:"USB", port:"usb", answer:"output",
+     instruction:"Collegate la stampante al PC tramite USB.",
+     consolidate:"Una qualunque delle porte USB disponibili è adatta al collegamento."},
+    {title:"Scanner", icon:"📠", cable:"USB", port:"usb", answer:"input",
+     instruction:"Collegate lo scanner al PC tramite USB.",
+     consolidate:"Una qualunque delle porte USB disponibili è adatta al collegamento."},
+    {title:"Webcam", icon:"📷", cable:"USB", port:"usb", answer:"input",
+     instruction:"Collegate la webcam al PC tramite USB.",
+     consolidate:"Una qualunque delle porte USB disponibili è adatta al collegamento."},
+    {title:"Touchscreen", icon:"▣", answer:"io",
+     instruction:"Ultimo controllo: il touchscreen non deve essere collegato. Dovete soltanto stabilire quale funzione svolge.",
+     consolidate:"Ricordate che un touchscreen mostra informazioni e permette anche di impartire comandi tramite il tocco.", touch:true}
+  ];
+
+  let current=0, connected=false, classSel="";
+  const body=document.getElementById("stageBody");
+
+  function render(){
+    const t=tasks[current];
+    connected=false; classSel="";
+    document.getElementById("stepNum").textContent=current+1;
+    document.getElementById("stepTitle").textContent=t.title;
+    document.getElementById("counter").textContent=`${current+1} / 7`;
+
+    if(t.touch){
+      body.innerHTML=`
+        <p class="instruction">${t.instruction}</p>
+        ${modalita==="consolidamento"?`<div class="scaffold">${t.consolidate}</div>`:""}
+        <div class="touchCard">
+          <div class="touchscreen">${t.icon}</div>
+          <h3>TOUCHSCREEN</h3>
+          <p>Selezionate la categoria corretta.</p>
+          ${classifyHTML()}
+        </div>`;
+      bindClassification();
+      return;
+    }
+
+    body.innerHTML=`
+      <p class="instruction">${t.instruction}</p>
+      ${modalita==="consolidamento"?`<div class="scaffold">${t.consolidate}</div>`:""}
+      <div class="lab">
+        <div class="devicebox">
+          <div class="deviceIcon">${t.icon}</div>
+          <div class="deviceName">${t.title}</div>
+          <div class="cableLabel">Cavo: <strong>${t.cable}</strong></div>
+          <div class="cableArea">
+            <div class="wire"></div>
+            <div class="connector" id="connector">${connectorText(t)}</div>
+          </div>
+          <div class="status" id="status">Trascinate il connettore sulla porta corretta del PC.</div>
+        </div>
+        <div class="pcbox">
+          <div class="pctitle">PANNELLO POSTERIORE DEL PC</div>
+          <div class="rear ${modalita==="consolidamento"?"showlabels":""}" id="rear">
+            <div class="fan"></div>
+            <div class="ioPanel">
+              <div class="port" id="usb1" data-port="usb">USB<span class="portTag">USB</span></div>
+              <div class="port" id="usb2" data-port="usb">USB<span class="portTag">USB</span></div>
+              <div class="port" id="hdmi" data-port="hdmi">HDMI<span class="portTag">HDMI</span></div>
+              <div class="port" id="audio" data-port="audio"><span class="portTag">AUDIO OUT</span></div>
+              <div class="port" id="mic" data-port="mic"><span class="portTag">MIC</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="classify" id="classify">
+        <h3>Collegamento riuscito. Che tipo di periferica è?</h3>
+        <p style="color:var(--muted);margin-top:0">${modalita==="consolidamento"?"Pensate alla direzione in cui viaggiano le informazioni.":""}</p>
+        ${classifyHTML()}
+      </div>`;
+    bindDrag(t);
+  }
+
+  function connectorText(t){
+    if(t.port==="hdmi") return "HDMI";
+    if(t.port==="usb") return "USB";
+    return "JACK";
+  }
+
+  function classifyHTML(){
+    return `<div class="choices" id="choices">
+      <button class="choice" data-v="input">INPUT</button>
+      <button class="choice" data-v="output">OUTPUT</button>
+      <button class="choice" data-v="io">INPUT/OUTPUT</button>
+    </div>
+    <div class="actions">
+      <button class="verify" id="verifyClass" disabled>VERIFICA</button>
+      <div class="feedback" id="classFeedback"></div>
+    </div>`;
+  }
+
+  function bindDrag(task){
+    const con=document.getElementById("connector");
+    const ports=[...document.querySelectorAll(".port")];
+    let dragging=false, ox=0, oy=0, startLeft=con.offsetLeft, startTop=con.offsetTop;
+
+    con.addEventListener("pointerdown",e=>{
+      if(connected)return;
+      dragging=true; con.setPointerCapture(e.pointerId);
+      const r=con.getBoundingClientRect(); ox=e.clientX-r.left; oy=e.clientY-r.top;
+      con.style.zIndex=20;
+    });
+
+    con.addEventListener("pointermove",e=>{
+      if(!dragging)return;
+      const area=con.parentElement.getBoundingClientRect();
+      con.style.position="fixed";
+      con.style.left=(e.clientX-ox)+"px"; con.style.top=(e.clientY-oy)+"px";
+      ports.forEach(p=>p.classList.remove("hover"));
+      const hit=portUnder(e.clientX,e.clientY);
+      if(hit)hit.classList.add("hover");
+    });
+
+    con.addEventListener("pointerup",e=>{
+      if(!dragging)return;
+      dragging=false; ports.forEach(p=>p.classList.remove("hover"));
+      const hit=portUnder(e.clientX,e.clientY);
+      if(hit && accepts(task.port,hit.dataset.port)){
+        connected=true;
+        hit.classList.add("goodflash");
+        con.classList.add("connected");
+        con.style.position="absolute";con.style.left="67%";con.style.top="29px";
+        con.textContent="✓";
+        const s=document.getElementById("status");s.textContent="Collegamento corretto.";s.className="status ok";
+        document.getElementById("classify").classList.add("show");
+        bindClassification();
+        setTimeout(()=>hit.classList.remove("goodflash"),800);
+      }else{
+        if(hit){hit.classList.add("badflash");setTimeout(()=>hit.classList.remove("badflash"),650);}
+        con.classList.add("bad");setTimeout(()=>con.classList.remove("bad"),550);
+        con.style.position="absolute";con.style.left="67%";con.style.top="29px";
+        const s=document.getElementById("status");s.textContent=hit?"Quella non è la porta corretta. Riprova.":"Porta non agganciata. Riprova.";s.className="status err";
+      }
+    });
+
+    function portUnder(x,y){
+      return ports.find(p=>{const r=p.getBoundingClientRect();return x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom;});
+    }
+    function accepts(req,actual){return req==="usb"?actual==="usb":req===actual;}
+  }
+
+  function bindClassification(){
+    const choices=document.getElementById("choices");
+    const verify=document.getElementById("verifyClass");
+    const feedback=document.getElementById("classFeedback");
+    choices.onclick=e=>{
+      const b=e.target.closest(".choice");if(!b)return;
+      classSel=b.dataset.v;
+      choices.querySelectorAll(".choice").forEach(x=>x.classList.remove("sel","wrong","correct"));
+      b.classList.add("sel"); verify.disabled=false; feedback.textContent="";feedback.className="feedback";
+    };
+    verify.onclick=()=>{
+      const expected=tasks[current].answer;
+      choices.querySelectorAll(".choice").forEach(x=>x.classList.remove("wrong","correct"));
+      const b=choices.querySelector(`[data-v="${classSel}"]`);
+      if(classSel===expected){
+        b.classList.add("correct");
+        feedback.textContent="Corretto.";feedback.className="feedback ok";
+        verify.disabled=true;choices.querySelectorAll(".choice").forEach(x=>x.disabled=true);
+        completeStep();
+      }else{
+        if(b)b.classList.add("wrong");
+        feedback.textContent="Classificazione non corretta. Potete cambiare risposta e riprovare.";feedback.className="feedback err";
+      }
+    };
+  }
+
+  function completeStep(){
+    document.getElementById("p"+(current+1)).classList.add("done");
+    const old=document.getElementById("nextmsg");if(old)old.remove();
+    const msg=document.createElement("div");msg.id="nextmsg";msg.className="next show";
+    if(current<tasks.length-1){
+      msg.innerHTML=`Operazione ${current+1} completata. <button class="verify" id="goNext" style="margin-left:10px">PROSEGUI</button>`;
+      body.appendChild(msg);
+      document.getElementById("goNext").onclick=()=>{current++;render();window.scrollTo({top:document.getElementById("stage").offsetTop-10,behavior:"smooth"});};
+    }else{
+      msg.textContent="Ultimo controllo superato. Procedura di manutenzione conclusa.";
+      body.appendChild(msg);
+      localStorage.setItem(solvedKey,"true");
+      document.getElementById("finish").classList.add("show");
+      setTimeout(()=>document.getElementById("finish").scrollIntoView({behavior:"smooth",block:"center"}),300);
+    }
+  }
+
+  render();
+
+  const existing=(localStorage.getItem(solvedKey)||"").toLowerCase();
+  if(["true","1","completato","completed","solved"].includes(existing)){
+    document.getElementById("finish").classList.add("show");
+  }
+})();
+</script>
+</body>
+</html>
