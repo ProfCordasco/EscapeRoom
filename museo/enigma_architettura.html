@@ -6,17 +6,25 @@
 <title>Enigma 06 — Diagnosi Hardware</title>
 <style>
 :root{
-  --bg:#071018;--panel:#0d1b26;--panel2:#112736;--line:#335268;
-  --cyan:#59dfff;--green:#5ee6a3;--red:#ff6b7d;--yellow:#ffd86a;
+  --bg:#071018;--panel:#0d1b26;--line:#335268;
+  --cyan:#59dfff;--green:#5ee6a3;--red:#ff6b7d;
   --text:#eef8ff;--muted:#9db1bf;
 }
 *{box-sizing:border-box}
-html,body{margin:0;min-height:100%;font-family:Inter,Segoe UI,Arial,sans-serif;background:
-radial-gradient(circle at 20% 0%,rgba(68,143,190,.15),transparent 30%),
-linear-gradient(180deg,#061018,#0a151f 65%,#050a0f);color:var(--text)}
+html,body{
+  margin:0;min-height:100%;
+  font-family:Inter,Segoe UI,Arial,sans-serif;
+  background:radial-gradient(circle at 20% 0%,rgba(68,143,190,.15),transparent 30%),
+             linear-gradient(180deg,#061018,#0a151f 65%,#050a0f);
+  color:var(--text)
+}
 body{padding:16px}
 .wrap{max-width:1120px;margin:auto}
-.header{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;padding:18px 20px;border:1px solid var(--line);border-radius:16px;background:rgba(9,23,33,.96);box-shadow:0 18px 50px rgba(0,0,0,.3)}
+.header{
+  display:flex;justify-content:space-between;gap:18px;align-items:flex-start;
+  padding:18px 20px;border:1px solid var(--line);border-radius:16px;
+  background:rgba(9,23,33,.96);box-shadow:0 18px 50px rgba(0,0,0,.3)
+}
 .kicker{font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--cyan);font-weight:900}
 h1{margin:5px 0 4px;font-size:clamp(24px,3vw,38px)}
 .sub{color:var(--muted);line-height:1.45;max-width:760px}
@@ -30,36 +38,112 @@ h1{margin:5px 0 4px;font-size:clamp(24px,3vw,38px)}
 .tests{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
 .testCard{border:1px solid #2f5064;border-radius:14px;background:#09151e;padding:15px}
 .testCard h3{margin:0 0 10px;font-size:17px}
-.testBtn{width:100%;border:0;border-radius:10px;padding:11px 14px;background:linear-gradient(#7de8ff,#47c6ed);color:#041218;font-weight:900;cursor:pointer}
+.testBtn{
+  width:100%;border:0;border-radius:10px;padding:11px 14px;
+  background:linear-gradient(#7de8ff,#47c6ed);color:#041218;font-weight:900;cursor:pointer
+}
 .testBtn:disabled{opacity:.45;cursor:default}
-.result{margin-top:10px;min-height:44px;border-radius:9px;padding:10px 12px;background:#071018;border:1px solid #243f50;color:var(--muted);font-family:Consolas,monospace}
+.result{
+  margin-top:10px;min-height:44px;border-radius:9px;padding:10px 12px;
+  background:#071018;border:1px solid #243f50;color:var(--muted);
+  font-family:Consolas,monospace
+}
 .result.ok{color:var(--green);border-color:#306f52}
 .result.fail{color:#ff9daa;border-color:#7b3443}
+
 .diagnosis{display:none;margin-top:18px;padding:16px;border:1px solid #31546a;border-radius:13px;background:#091721}
 .diagnosis.show{display:block}
-.case{display:grid;grid-template-columns:1fr 1.2fr;gap:16px;align-items:center}
-.caseVisual{border:4px solid #394953;border-radius:14px;background:linear-gradient(145deg,#222d34,#121a1f);min-height:310px;position:relative;padding:18px}
-.caseTitle{font-weight:900;margin-bottom:10px}
-.componentGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.component{border:2px solid #4a6372;border-radius:12px;background:#112431;min-height:95px;display:grid;place-items:center;text-align:center;padding:10px;font-weight:900;cursor:pointer;transition:.15s}
-.component:hover{border-color:var(--cyan);transform:translateY(-1px)}
-.component.correct{border-color:var(--green);background:#123a2a}
-.component.wrong{border-color:var(--red);background:#421c25}
-.console{border:1px solid #2d5065;border-radius:13px;background:#071018;padding:14px;font-family:Consolas,monospace;line-height:1.6}
+.boardWrap{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px;align-items:start}
+.board{
+  position:relative;min-height:470px;border:5px solid #3e4f58;border-radius:16px;
+  background:
+    linear-gradient(90deg,rgba(58,97,73,.15) 1px,transparent 1px),
+    linear-gradient(rgba(58,97,73,.15) 1px,transparent 1px),
+    linear-gradient(145deg,#23352e,#13221d);
+  background-size:28px 28px,28px 28px,auto;
+  overflow:hidden;box-shadow:inset 0 0 35px rgba(0,0,0,.45)
+}
+.chip,.ram,.iochip,.power,.trace{
+  position:absolute;cursor:pointer;transition:.15s;z-index:3
+}
+.chip:hover,.ram:hover,.iochip:hover,.power:hover,.trace:hover{filter:brightness(1.15)}
+.cpu{
+  left:39%;top:38%;width:150px;height:150px;border:8px solid #8a979f;border-radius:10px;
+  background:
+    repeating-linear-gradient(0deg,#1d252a 0 6px,#29353c 6px 12px);
+  box-shadow:0 0 0 10px #313d44,0 12px 25px rgba(0,0,0,.35)
+}
+.cpu:after{
+  content:"";position:absolute;inset:27px;border:2px solid #79868e;border-radius:4px;
+  background:linear-gradient(135deg,#343f45,#1c2428)
+}
+.ram{
+  left:72%;top:22%;width:58px;height:190px;border:3px solid #2b5f47;border-radius:5px;
+  background:linear-gradient(90deg,#1b5b3b,#28724d)
+}
+.ram:before,.ram:after{
+  content:"";position:absolute;left:7px;right:7px;height:28px;background:#12191d;border:1px solid #64727a;
+  box-shadow:0 42px 0 #12191d,0 84px 0 #12191d,0 126px 0 #12191d
+}
+.iochip{
+  left:12%;top:60%;width:120px;height:80px;border:4px solid #50636e;border-radius:9px;
+  background:#1c2a31
+}
+.iochip:after{
+  content:"";position:absolute;left:14px;right:14px;top:28px;height:10px;background:#60747f;
+  box-shadow:0 18px 0 #60747f
+}
+.power{
+  right:5%;bottom:7%;width:110px;height:84px;border:4px solid #5f6669;border-radius:8px;background:#22292d
+}
+.power:before{
+  content:"";position:absolute;left:14px;top:12px;width:40px;height:40px;border-radius:50%;
+  border:5px solid #535e64
+}
+
+.trace{
+  height:12px;background:#a58436;border:2px solid #d6b15a;border-radius:10px;
+  box-shadow:0 0 5px rgba(221,180,83,.2)
+}
+.trace.vertical{width:12px;height:auto}
+.t1{left:23%;top:67%;width:19%;transform:rotate(-12deg)}
+.t2{left:50%;top:31%;width:24%;transform:rotate(-16deg)}
+.t3{left:51%;top:66%;width:26%;transform:rotate(14deg)}
+.t4{left:65%;top:53%;width:22%;transform:rotate(28deg)}
+.t5{left:20%;top:44%;width:19%;transform:rotate(20deg)}
+.trace.fault.correct{background:#2f8f60;border-color:#66e5a6;box-shadow:0 0 14px rgba(94,230,163,.65)}
+.choiceWrong{outline:4px solid rgba(255,107,125,.5)}
+.boardLabel{
+  position:absolute;left:14px;top:12px;font-size:11px;letter-spacing:.12em;
+  color:#9ec4b0;font-weight:900;opacity:.85
+}
+.console{
+  border:1px solid #2d5065;border-radius:13px;background:#071018;padding:14px;
+  font-family:Consolas,monospace;line-height:1.65
+}
 .console .ok{color:var(--green)} .console .bad{color:#ff8e9c}
-.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
-.actionBtn{border:1px solid #3d6378;border-radius:10px;background:#102633;color:white;padding:10px 13px;font-weight:900;cursor:pointer}
-.actionBtn:hover{border-color:var(--cyan)}
 .feedback{margin-top:12px;font-weight:850}
 .feedback.ok{color:var(--green)} .feedback.err{color:#ff9daa}
 .repair{display:none;margin-top:18px;padding:16px;border:1px solid #3a6d55;border-radius:13px;background:#0d261d}
 .repair.show{display:block}
-.repairBtn{border:0;border-radius:10px;padding:12px 17px;font-weight:900;background:linear-gradient(#8af0b9,#52d993);color:#06140d;cursor:pointer}
-.finish{display:none;margin-top:20px;padding:24px;border:1px solid #418d69;border-radius:18px;background:linear-gradient(#0f2e24,#0a2119);text-align:center}
+.repairBtn{
+  border:0;border-radius:10px;padding:12px 17px;font-weight:900;
+  background:linear-gradient(#8af0b9,#52d993);color:#06140d;cursor:pointer
+}
+.finish{
+  display:none;margin-top:20px;padding:24px;border:1px solid #418d69;border-radius:18px;
+  background:linear-gradient(#0f2e24,#0a2119);text-align:center
+}
 .finish.show{display:block}
-.relic{width:100px;height:100px;margin:17px auto 10px;border:1px solid #5ce6a0;border-radius:22px;background:#091d16;color:#a3ffd3;display:grid;place-items:center;font-size:58px}
+.relic{
+  width:100px;height:100px;margin:17px auto 10px;border:1px solid #5ce6a0;border-radius:22px;
+  background:#091d16;color:#a3ffd3;display:grid;place-items:center;font-size:58px
+}
 .hidden{display:none!important}
-@media(max-width:760px){body{padding:9px}.header{flex-direction:column}.tests,.case{grid-template-columns:1fr}.badges{justify-content:flex-start}}
+@media(max-width:800px){
+  body{padding:9px}.header{flex-direction:column}.tests{grid-template-columns:1fr}
+  .badges{justify-content:flex-start}.boardWrap{grid-template-columns:1fr}.board{min-height:420px}
+}
 </style>
 </head>
 <body>
@@ -68,7 +152,7 @@ h1{margin:5px 0 4px;font-size:clamp(24px,3vw,38px)}
     <div>
       <div class="kicker">Museo dell'Informatica // Galleria Hardware</div>
       <h1>ENIGMA 06 — DIAGNOSI DEL COMPUTER</h1>
-      <div class="sub">Un computer della mostra non completa il test di funzionamento. Eseguite le verifiche e individuate dove si trova il guasto.</div>
+      <div class="sub">Un computer della mostra non completa il test di funzionamento. Eseguite tutte le verifiche e localizzate il guasto sulla scheda.</div>
     </div>
     <div class="badges">
       <div class="badge">GRUPPO 2</div>
@@ -87,64 +171,76 @@ h1{margin:5px 0 4px;font-size:clamp(24px,3vw,38px)}
           <button class="testBtn" data-test="keyboard">TESTA INPUT TASTIERA</button>
           <div class="result" id="r-keyboard">In attesa del test...</div>
         </div>
+
         <div class="testCard">
           <h3>🖱️ Mouse</h3>
           <button class="testBtn" data-test="mouse">TESTA INPUT MOUSE</button>
           <div class="result" id="r-mouse">In attesa del test...</div>
         </div>
+
         <div class="testCard">
           <h3>💾 Memoria</h3>
           <button class="testBtn" data-test="memory">TESTA MEMORIA</button>
           <div class="result" id="r-memory">In attesa del test...</div>
         </div>
+
         <div class="testCard">
           <h3>🖥️ Monitor</h3>
           <button class="testBtn" data-test="monitor">TESTA OUTPUT MONITOR</button>
           <div class="result" id="r-monitor">In attesa del test...</div>
         </div>
+
         <div class="testCard">
-          <h3>⚙️ CPU</h3>
-          <button class="testBtn" data-test="cpu">TESTA CPU</button>
+          <h3>⚙️ Elaborazione</h3>
+          <button class="testBtn" data-test="cpu">TESTA ELABORAZIONE</button>
           <div class="result" id="r-cpu">In attesa del test...</div>
         </div>
+
         <div class="testCard">
-          <h3>🔗 Comunicazione interna</h3>
-          <button class="testBtn" data-test="bus">TESTA COMUNICAZIONE</button>
+          <h3>🔗 Trasferimento dati</h3>
+          <button class="testBtn" data-test="bus">TESTA TRASFERIMENTO</button>
           <div class="result" id="r-bus">In attesa del test...</div>
         </div>
       </div>
 
       <div class="diagnosis" id="diagnosis">
-        <h3 style="margin-top:0">FASE 2 — INDIVIDUATE IL GUASTO</h3>
-        <p>In base ai risultati dei test, cliccate sul componente o collegamento che secondo voi è guasto.</p>
+        <h3 style="margin-top:0">FASE 2 — LOCALIZZATE IL GUASTO</h3>
+        <p>Avete tutti i risultati. Osservate l'interno del computer e cliccate direttamente sull'elemento che ritenete responsabile del malfunzionamento.</p>
 
-        <div class="case">
-          <div class="caseVisual">
-            <div class="caseTitle">INTERNO DEL COMPUTER</div>
-            <div class="componentGrid">
-              <div class="component" data-choice="cpu">CPU</div>
-              <div class="component" data-choice="memory">MEMORIA</div>
-              <div class="component" data-choice="bus">BUS / COLLEGAMENTI</div>
-              <div class="component" data-choice="io">PERIFERICHE I/O</div>
-            </div>
+        <div class="boardWrap">
+          <div class="board" id="board">
+            <div class="boardLabel">VISTA INTERNA // DIAGNOSTICA MANUALE</div>
+
+            <div class="chip cpu" data-target="cpu" title=""></div>
+            <div class="ram" data-target="memory" title=""></div>
+            <div class="iochip" data-target="io" title=""></div>
+            <div class="power" data-target="power" title=""></div>
+
+            <div class="trace t1" data-target="trace-io"></div>
+            <div class="trace t2 fault" data-target="fault"></div>
+            <div class="trace t3" data-target="trace-out"></div>
+            <div class="trace t4" data-target="trace-power"></div>
+            <div class="trace t5" data-target="trace-other"></div>
           </div>
 
-          <div class="console">
-            <div class="ok">TASTIERA: OK</div>
-            <div class="ok">MOUSE: OK</div>
-            <div class="ok">MEMORIA: OK</div>
-            <div class="ok">MONITOR: OK</div>
-            <div class="ok">CPU RILEVATA: OK</div>
-            <div class="bad">COMUNICAZIONE CPU ↔ MEMORIA: ERRORE</div>
+          <div>
+            <div class="console">
+              <div class="ok">INPUT TASTIERA: OK</div>
+              <div class="ok">INPUT MOUSE: OK</div>
+              <div class="ok">MEMORIA — SCRITTURA: OK</div>
+              <div class="ok">MEMORIA — LETTURA: OK</div>
+              <div class="ok">OUTPUT VIDEO: OK</div>
+              <div class="ok">ELABORAZIONE 7 + 5 = 12: OK</div>
+              <div class="bad">TRASFERIMENTO CPU ↔ MEMORIA: ERRORE</div>
+            </div>
+            <div class="feedback" id="diagFeedback">Nessun elemento selezionato.</div>
           </div>
         </div>
 
-        <div class="feedback" id="diagFeedback"></div>
-
         <div class="repair" id="repair">
-          <h3 style="margin-top:0">GUASTO INDIVIDUATO</h3>
-          <p>Il collegamento tra i componenti è interrotto. Ripristinate il BUS e rilanciate il controllo.</p>
-          <button class="repairBtn" id="repairBtn">RIPRISTINA COLLEGAMENTO</button>
+          <h3 style="margin-top:0">DIAGNOSI CONFERMATA</h3>
+          <p>Il collegamento tra elaborazione e memoria è interrotto.</p>
+          <button class="repairBtn" id="repairBtn">RIPARA COLLEGAMENTO</button>
           <div class="feedback" id="repairFeedback"></div>
         </div>
       </div>
@@ -154,7 +250,7 @@ h1{margin:5px 0 4px;font-size:clamp(24px,3vw,38px)}
   <section class="finish" id="finish">
     <div class="kicker">Diagnosi completata</div>
     <h2>ARCHITETTURA RIPRISTINATA</h2>
-    <p>Il computer comunica nuovamente con tutti i suoi componenti.</p>
+    <p>La comunicazione interna è stata ripristinata.</p>
     <div class="relic">⬢</div>
     <strong>RELIQUIA RECUPERATA</strong>
     <div style="margin-top:8px;color:var(--muted);font-size:12px">Il Codificatore ha registrato il completamento dell'enigma.</div>
@@ -168,32 +264,29 @@ h1{margin:5px 0 4px;font-size:clamp(24px,3vw,38px)}
   const solvedKey=`museoInfo_${classe}_${modalita}_enigma06`;
   const validSession=!!classe && ["ripasso","consolidamento"].includes(modalita);
 
-  const modeBadge=document.getElementById("modeBadge");
-  const modeNotice=document.getElementById("modeNotice");
-  modeBadge.textContent="MODALITÀ "+(modalita?modalita.toUpperCase():"NON CONFIGURATA");
+  document.getElementById("modeBadge").textContent="MODALITÀ "+(modalita?modalita.toUpperCase():"NON CONFIGURATA");
 
   if(!validSession){
-    modeNotice.innerHTML="<strong>Sessione non configurata.</strong> Tornate alla configurazione del museo.";
+    document.getElementById("modeNotice").innerHTML="<strong>Sessione non configurata.</strong> Tornate alla configurazione del museo.";
     document.querySelector(".panel").classList.add("hidden");
     return;
   }
 
-  if(modalita==="consolidamento"){
-    modeNotice.innerHTML="<strong>CONSOLIDAMENTO.</strong> Eseguite tutti i test e confrontate gli esiti: cercate ciò che impedisce ai componenti di comunicare.";
-  }else{
-    modeNotice.innerHTML="<strong>RIPASSO.</strong> Eseguite i test e interpretate i risultati. Se necessario, consultate l'Archivio tecnico.";
-  }
+  document.getElementById("modeNotice").innerHTML =
+    modalita==="consolidamento"
+      ? "<strong>CONSOLIDAMENTO.</strong> Eseguite tutti i test e confrontate attentamente ciò che funziona con ciò che non funziona."
+      : "<strong>RIPASSO.</strong> Eseguite tutti i test e interpretate gli esiti. Se necessario, consultate l'Archivio tecnico.";
 
-  const tests = {
-    keyboard:["SEGNALE RICEVUTO ✓","ok"],
-    mouse:["MOVIMENTO RILEVATO ✓","ok"],
-    memory:["SCRITTURA: OK · LETTURA: OK","ok"],
-    monitor:["DISPLAY TEST: OK","ok"],
-    cpu:["CPU RILEVATA ✓","ok"],
-    bus:["ERRORE: CPU ↔ MEMORIA","fail"]
+  const tests={
+    keyboard:["TASTO A → CODICE RICEVUTO 65","ok"],
+    mouse:["MOVIMENTO RILEVATO → X:+12  Y:-4","ok"],
+    memory:["SCRITTURA BLOCCO 04: OK · LETTURA BLOCCO 04: OK","ok"],
+    monitor:["SEGNALE VIDEO RICEVUTO · DISPLAY TEST: OK","ok"],
+    cpu:["OPERAZIONE 7 + 5 → RISULTATO 12 · OK","ok"],
+    bus:["CPU → MEMORIA: ERRORE · MEMORIA → CPU: ERRORE","fail"]
   };
 
-  let done = new Set();
+  let done=new Set();
 
   document.querySelectorAll(".testBtn").forEach(btn=>{
     btn.addEventListener("click",()=>{
@@ -212,27 +305,36 @@ h1{margin:5px 0 4px;font-size:clamp(24px,3vw,38px)}
     });
   });
 
-  document.querySelectorAll(".component").forEach(c=>{
-    c.addEventListener("click",()=>{
-      const feedback=document.getElementById("diagFeedback");
-      document.querySelectorAll(".component").forEach(x=>x.classList.remove("wrong","correct"));
+  const feedback=document.getElementById("diagFeedback");
+  const repair=document.getElementById("repair");
 
-      if(c.dataset.choice==="bus"){
-        c.classList.add("correct");
-        feedback.textContent="Corretto. I componenti funzionano, ma non riescono a comunicare correttamente.";
+  document.querySelectorAll("[data-target]").forEach(el=>{
+    el.addEventListener("click",()=>{
+      document.querySelectorAll("[data-target]").forEach(x=>x.classList.remove("choiceWrong"));
+      if(el.dataset.target==="fault"){
+        el.classList.add("correct");
+        feedback.textContent="Diagnosi corretta: avete individuato il collegamento interrotto tra elaborazione e memoria.";
         feedback.className="feedback ok";
-        document.getElementById("repair").classList.add("show");
+        repair.classList.add("show");
       }else{
-        c.classList.add("wrong");
-        feedback.textContent="Questo componente ha superato i test. Provate a rileggere gli esiti della diagnostica.";
+        el.classList.add("choiceWrong");
+        let msg="Questo elemento non corrisponde al guasto rilevato. Rileggete i risultati dei test.";
+        if(el.dataset.target==="cpu") msg="L'unità di elaborazione ha eseguito correttamente il calcolo 7 + 5.";
+        if(el.dataset.target==="memory") msg="La memoria ha superato sia la prova di scrittura sia quella di lettura.";
+        if(el.dataset.target==="io") msg="Le periferiche di input hanno superato i test.";
+        if(el.dataset.target==="power") msg="Il computer è acceso e i componenti risultano operativi: cercate altrove.";
+        feedback.textContent=msg;
         feedback.className="feedback err";
       }
     });
   });
 
   document.getElementById("repairBtn").addEventListener("click",()=>{
+    document.querySelector(".fault").style.background="#2f8f60";
+    document.querySelector(".fault").style.borderColor="#66e5a6";
+    document.querySelector(".fault").style.boxShadow="0 0 14px rgba(94,230,163,.65)";
     const fb=document.getElementById("repairFeedback");
-    fb.innerHTML="COLLEGAMENTO RIPRISTINATO ✓<br>CPU ↔ MEMORIA: OK<br>TRASMISSIONE DATI: OK";
+    fb.innerHTML="COLLEGAMENTO RIPRISTINATO ✓<br>CPU ↔ MEMORIA: OK<br>TRASFERIMENTO DATI: OK";
     fb.className="feedback ok";
     localStorage.setItem(solvedKey,"true");
     document.getElementById("finish").classList.add("show");
